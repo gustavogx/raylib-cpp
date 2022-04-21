@@ -5,16 +5,17 @@
 *	Based on the example 'Basic window' by
 *   Copyright (c) 2013-2016 Ramon Santamaria (@raysan5)
 *
+* 	On linux, compile with
+* 	g++ -std=c++17 -o basic_window core_basic_window.cpp -lraylib -I../../build/raylib/include/. -I../cpp/. -lGL -lm -lpthread -ldl -lrt -lX11 
+*
 ********************************************************************************************/
 
-// Compile on linux
-// g++ -std=c++17 -o basic_window core_basic_window.cpp -lraylib -I../../build/raylib/include/. -I../cpp/. -lGL -lm -lpthread -ldl -lrt -lX11 
 
 #include "raylib.hpp"
 
 int main(void)
 {
-    using namespace raylib;
+	using namespace raylib;
 
 	// Initialization
 	//--------------------------------------------------------------------------------------
@@ -35,8 +36,6 @@ int main(void)
 
 		Drawing(){
 
-            Color z;
-            
 			render::ClearBackground(Color::RayWhite);
 			text::Draw("Congrats! You created your first window!", 190, 200, 20, Color::LightGray);
 			
