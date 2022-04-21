@@ -1,26 +1,14 @@
 /*******************************************************************************************
 *
-*   raylib [core] example - Basic window
-*
-*   Welcome to raylib!
-*
-*   To test examples, just press F6 and execute raylib_compile_execute script
-*   Note that compiled executable is placed in the same folder as .c file
-*
-*   You can find all basic examples on C:\raylib\raylib\examples folder or
-*   raylib official webpage: www.raylib.com
-*
-*   Enjoy using raylib. :)
-*
-*   This example has been created using raylib 1.0 (www.raylib.com)
-*   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
-*
+*   raylib-cpp example - Basic window
+*	
+*	Based on the example 'Basic window' by
 *   Copyright (c) 2013-2016 Ramon Santamaria (@raysan5)
 *
 ********************************************************************************************/
 
 // Compile on linux
-// g++ -std=c++17 -o basic_window core_basic_window.cpp -lraylib -I../../build/raylib/include/. -I../../cpp/. -lGL -lm -lpthread -ldl -lrt -lX11 
+// g++ -std=c++17 -o basic_window core_basic_window.cpp -lraylib -I../../build/raylib/include/. -I../cpp/. -lGL -lm -lpthread -ldl -lrt -lX11 
 
 #include "raylib.hpp"
 
