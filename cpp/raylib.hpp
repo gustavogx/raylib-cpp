@@ -10,6 +10,10 @@ namespace raylib_c{
 
 namespace raylib {
 
+	// ==================================================================================================
+	// Structures
+	// ==================================================================================================
+
 	// Color, 4 components, R8G8B8A8 (32bit)
 	struct Color : public raylib_c::Color {
 		Color() = default;
@@ -24,7 +28,7 @@ namespace raylib {
 		static Color const Orange;		// Orange
 		static Color const Pink;		// Pink
 		static Color const Red;			// Red
-		static Color const Marron;		// Marron
+		static Color const Maroon;		// Maroon
 		static Color const Green;		// Green
 		static Color const Lime;		// Lime
 		static Color const DarkGreen;	// Dark Green
@@ -54,7 +58,7 @@ namespace raylib {
 	Color const Color::Orange 		= ORANGE;
 	Color const Color::Pink			= PINK;
 	Color const Color::Red			= RED;
-	Color const Color::Marron		= MAROON;
+	Color const Color::Maroon		= MAROON;
 	Color const Color::Green		= GREEN;
 	Color const Color::Lime			= LIME;
 	Color const Color::DarkGreen	= DARKGREEN;
@@ -74,28 +78,26 @@ namespace raylib {
 	Color const Color::Magenta		= MAGENTA;
 	Color const Color::RayWhite		= RAYWHITE;
 
-// ==================================================================================================
-// Structures
-// ==================================================================================================
-
-
 	struct Vector2i{
-		float x,y;
-		float &operator[](const uint8_t &index) { return *(&x+index); }
+		uint32_t x,y;
+		uint32_t &u = x;
+		uint32_t &v = y;
+		uint32_t &operator[](const uint8_t &index) { return *(&x+index); }
 		inline Vector2i operator+=(const Vector2i &other) { x+=other.x; y+=other.y; return *this; }
 		inline Vector2i operator+(const Vector2i &other) { return {x+other.x,y+other.y}; }
 		inline Vector2i operator-=(const Vector2i &other) { x-=other.x; y-=other.y; return *this; }
 		inline Vector2i operator-(const Vector2i &other) { return {x-other.x,y-other.y}; }
-		inline Vector2i operator*=(const float &other) { x*=other; y*=other; return *this; }
-		inline Vector2i operator*(const float &other) { return {x*other,y*other}; }
+		inline Vector2i operator*=(const uint32_t &other) { x*=other; y*=other; return *this; }
+		inline Vector2i operator*(const uint32_t &other) { return {x*other,y*other}; }
 	};
 
 
-	struct Vector2f{
-		float x,y;
+	struct Vector2f : public raylib_c::Vector2 {
+		Vector2f() = default;
+		Vector2f(const float &x, const float &y) : raylib_c::Vector2{x,y} {}
+
 		float &operator[](const uint8_t &index) { return *(&x+index); }
-		operator raylib_c::Vector2() { return {x,y}; }
-		operator raylib_c::Vector2() const { return {x,y}; }
+		
 		inline Vector2f operator+=(const Vector2f &other) { x+=other.x; y+=other.y; return *this; }
 		inline Vector2f operator+(const Vector2f &other) { return {x+other.x,y+other.y}; }
 		inline Vector2f operator-=(const Vector2f &other) { x-=other.x; y-=other.y; return *this; }
@@ -104,11 +106,12 @@ namespace raylib {
 		inline Vector2f operator*(const float &other) { return {x*other,y*other}; }
 	};
 	
-	struct Vector3f{
-		float x,y,z;
+	struct Vector3f : public raylib_c::Vector3{
+		Vector3f() = default;
+		Vector3f(const float &x, const float &y, const float &z) : raylib_c::Vector3{x,y,z} {}
+
 		float &operator[](const uint8_t &index) { return *(&x+index); }
-		operator raylib_c::Vector3() { return {x,y,z}; }
-		operator raylib_c::Vector3() const { return {x,y,z}; }
+
 		inline Vector3f operator+=(const Vector3f &other) { x+=other.x; y+=other.y; z+=other.z; return *this; }
 		inline Vector3f operator+(const Vector3f &other) { return {x+other.x,y+other.y,z+other.z}; }
 		inline Vector3f operator-=(const Vector3f &other) { x-=other.x; y-=other.y; z-=other.z; return *this; }
@@ -117,11 +120,12 @@ namespace raylib {
 		inline Vector3f operator*(const float &other) { return {x*other,y*other,z*other}; }
 	};
 
-	struct Vector4f{
-		float x,y,z,w;
+	struct Vector4f : public raylib_c::Vector4{
+		Vector4f() = default;
+		Vector4f(const float &x, const float &y, const float &z, const float &w) : raylib_c::Vector4{x,y,z,w} {}
+
 		float &operator[](const uint8_t &index) { return *(&x+index); }
-		operator raylib_c::Vector4() { return {x,y,z,w}; }
-		operator raylib_c::Vector4() const { return {x,y,z,w}; }
+
 		inline Vector4f operator+=(const Vector4f &other) { x+=other.x; y+=other.y; z+=other.z; w+=other.w; return *this; }
 		inline Vector4f operator+(const Vector4f &other) { return {x+other.x,y+other.y,z+other.z,w+other.w}; }
 		inline Vector4f operator-=(const Vector4f &other) { x-=other.x; y-=other.y; z-=other.z; w-=other.w; return *this; }
@@ -130,10 +134,8 @@ namespace raylib {
 		inline Vector4f operator*(const float &other) { return {x*other,y*other,z*other,w*other}; }
 	};
 
-
-/*
 	// Camera, defines position/orientation in 3d space
-	struct Camera3D {
+	struct Camera3D : public raylib_c::Camera3D {
 
 		// Camera projection
 		enum Type{ 
@@ -142,40 +144,26 @@ namespace raylib {
 		};
 
 		// Camera system modes
-		enum System{
+		enum Mode{
 			Custom = 0,             // Custom camera
 			Free,                   // Free camera
 			Orbital,                // Orbital camera
 			FirstPerson,            // First person camera
 			ThirdPerson             // Third person camera
 		};
-
-		Vector3f Position;       // Camera position
-		Vector3f Target;         // Camera target it looks-at
-		Vector3f Up;             // Camera up vector (rotation over its axis)
-		float    FoVY;             // Camera field-of-view apperture in Y (degrees) in perspective, used as near plane width in orthographic
-		Camera3D::Type Projection; // Camera projection: Type::Perspective or Type::Orthographic
 	
-		void SetSystemMode(const Camera3D::System &system) { raylib_c::SetCameraMode( (raylib_c::Camera3D)*this, system); }
-		void Update() { ::UpdateCamera( (::Camera3D*) this); }
+		void SetMode(const Camera3D::Mode &system) { raylib_c::SetCameraMode( *this, system); }
+		void Update() { raylib_c::UpdateCamera( this); }
 
-		inline operator ::Camera3D*() { return (::Camera3D*) &(*this); }
-		inline operator ::Camera3D() { return {Position,Target,Up,FoVY,Projection}; }
-		inline operator ::Camera3D() const { return {Position,Target,Up,FoVY,Projection}; }
 	};
 
 	typedef Camera3D Camera;    // Camera type fallback, defaults to Camera3D
 
 	// Camera2D, defines position/orientation in 2d space
-	struct Camera2D {
-		Vector2 Offset;         // Camera offset (displacement from target)
-		Vector2 Target;         // Camera target (rotation and zoom origin)
-		float Rotation;         // Camera rotation in degrees
-		float Zoom;             // Camera zoom (scaling), should be 1.0f by default
-		operator ::Camera2D() { return {Offset,Target,Rotation,Zoom}; }
-		operator ::Camera2D() const { return {Offset,Target,Rotation,Zoom}; }
+	struct Camera2D : public raylib_c::Camera2D {
 	};
 
+/*
 	// Texture, tex data stored in GPU memory (VRAM)
 	class Texture {
 		
@@ -289,19 +277,19 @@ namespace raylib {
 			Drawing() : run(true) { raylib_c::BeginDrawing(); } // Setup canvas (framebuffer) to start drawing
 			~Drawing() { raylib_c::EndDrawing(); }               // End canvas drawing and swap buffers (double buffering)
 		};
-/*		
+		
 		struct Mode2D{
-			bool Run;
-			Mode2D(const Camera2D &camera) : Run(true) { ::BeginMode2D( (::Camera2D)camera); } // Setup canvas (framebuffer) to start drawing
-			~Mode2D() { ::EndMode2D(); }               // End canvas drawing and swap buffers (double buffering)
+			bool run;
+			Mode2D(const Camera2D &camera) : run(true) { raylib_c::BeginMode2D(camera); } 	// Setup canvas (framebuffer) to start drawing
+			~Mode2D() { raylib_c::EndMode2D(); }               								// End canvas drawing and swap buffers (double buffering)
 		};
 
 		struct Mode3D{
-			bool Run;
-			Mode3D(const Camera3D &camera) : Run(true) { ::BeginMode3D( (::Camera3D)camera); } // Setup canvas (framebuffer) to start drawing
-			~Mode3D() { ::EndMode3D(); }               // End canvas drawing and swap buffers (double buffering)
+			bool run;
+			Mode3D(const Camera3D &camera) : run(true) { raylib_c::BeginMode3D(camera); } 	// Setup canvas (framebuffer) to start drawing
+			~Mode3D() { raylib_c::EndMode3D(); }               								// End canvas drawing and swap buffers (double buffering)
 		};
-*/		
+		
 	}
 	#define Drawing() for(raylib::render::Drawing scope; scope.run; scope.run=false)
 	#define Mode2D(camera2D) for(raylib::render::Mode2D scope(camera2D); scope.run; scope.run=false)
@@ -318,23 +306,23 @@ namespace raylib {
 	static void BeginVrStereoMode(VrStereoConfig config) { ::BeginVrStereoMode(config); }	// Begin stereo rendering (requires VR simulator)
 	static void EndVrStereoMode() { ::EndVrStereoMode(); } 									// End stereo rendering (requires VR simulator)
 */
-/*
+
 	namespace Draw {
 		// Shapes
-		static void Pixel(const Vector2f &position, const Color &color) { ::DrawPixelV((Vector2f)position,color); }									// Draw a pixel (Vector version)
-		static void Rectangle(const Vector2f &position, const Vector2f &size, const Color &color) { ::DrawRectangleV(position,size,color); }	// Draw a color-filled rectangle
-		static void RectangleLines(const Vector2f &position, const Vector2f &size, const Color &color) { ::DrawRectangleLines(position.x,position.y,size.x,size.y,color); }	// Draw a color-filled rectangle		
+		static void Pixel(const Vector2f &position, const Color &color) { raylib_c::DrawPixelV((Vector2f)position,color); }									// Draw a pixel (Vector version)
+		static void Rectangle(const Vector2f &position, const Vector2f &size, const Color &color) { raylib_c::DrawRectangleV(position,size,color); }	// Draw a color-filled rectangle
+		static void RectangleLines(const Vector2f &position, const Vector2f &size, const Color &color) { raylib_c::DrawRectangleLines(position.x,position.y,size.x,size.y,color); }	// Draw a color-filled rectangle		
 		
 		// Models
-		static void Cube(Vector3f position, Vector3f size, Color color) { ::DrawCubeV((Vector3)position, (Vector3)size, color); }                                       // Draw cube (Vector version)
-		static void CubeWires(Vector3 position, Vector3 size, Color color) { ::DrawCubeWiresV((Vector3)position, (Vector3)size, color); }                                  // Draw cube wires (Vector version)
-		static void Grid(uint32_t slices, float spacing) { ::DrawGrid(slices,spacing); }
+		static void Cube(const Vector3f &position, const Vector3f &size, const Color &color) { raylib_c::DrawCubeV(position, size, color); }                                       // Draw cube (Vector version)
+		static void CubeWires(const Vector3f &position, const Vector3f &size, const Color &color) { raylib_c::DrawCubeWiresV(position, size, color); }                                  // Draw cube wires (Vector version)
+		static void Grid(uint32_t slices, float spacing) { raylib_c::DrawGrid(slices,spacing); }
 	}
-*/
+
 	namespace text{
 
-//		static void FPS(const uint32_t &posX, const uint32_t &posY) { ::DrawFPS(posX,posY); }
-		static void Draw(const char *text, uint32_t posX, uint32_t posY, uint32_t fontSize, Color color) { raylib_c::DrawText(text, posX, posY, fontSize, color);}
+		void FPS(const Vector2i &position) { raylib_c::DrawFPS(position.x, position.y); }
+		void Draw(const std::string &text, const Vector2i &position, uint32_t fontSize, Color color) { raylib_c::DrawText(text.c_str(), position.x, position.y, fontSize, color);}
 	}
 
 	namespace Input{

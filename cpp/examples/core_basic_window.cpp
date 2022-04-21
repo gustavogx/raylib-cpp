@@ -6,10 +6,9 @@
 *   Copyright (c) 2013-2016 Ramon Santamaria (@raysan5)
 *
 * 	On linux, compile with
-* 	g++ -std=c++17 -o basic_window core_basic_window.cpp -lraylib -I../../build/raylib/include/. -I../cpp/. -lGL -lm -lpthread -ldl -lrt -lX11 
+* 	g++ -o basic_window core_basic_window.cpp -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -I../../build/raylib/include/. -I../. -std=c++17
 *
 ********************************************************************************************/
-
 
 #include "raylib.hpp"
 
@@ -37,7 +36,7 @@ int main(void)
 		Drawing(){
 
 			render::ClearBackground(Color::RayWhite);
-			text::Draw("Congrats! You created your first window!", 190, 200, 20, Color::LightGray);
+			text::Draw("Congrats! You created your first window!", {190, 200}, 20, Color::LightGray);
 			
 		}
 		//----------------------------------------------------------------------------------
