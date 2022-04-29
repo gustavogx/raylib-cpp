@@ -6,6 +6,7 @@
 
 namespace raylib_c{
 	#include "raylib.h"
+	//#include "rlgl.h"
 }
 
 namespace raylib {
@@ -16,8 +17,13 @@ namespace raylib {
 
 	// Color, 4 components, R8G8B8A8 (32bit)
 	struct Color : public raylib_c::Color {
-		Color() = default;
-		Color(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha=255) : raylib_c::Color{red,green,blue,alpha} {}
+
+		// Wrappers 
+		inline void Fade(Color &color, const float &alpha) { color = raylib_c::Fade(color,alpha); }
+
+		Color(const raylib_c::Color &color) : raylib_c::Color(color) {} 
+		Color(const uint8_t &red, const uint8_t &green, const uint8_t &blue, const uint8_t &alpha=255) : raylib_c::Color{red,green,blue,alpha} {}
+		Color Fade(const float &alpha) const { return raylib_c::Fade(*this,alpha); }
 
 		// Custom raylib color palette for amazing visuals
 		static Color const Gray;		// Gray
@@ -78,60 +84,184 @@ namespace raylib {
 	Color const Color::Magenta		= MAGENTA;
 	Color const Color::RayWhite		= RAYWHITE;
 
+	// Integer Vector 2D
 	struct Vector2i{
-		uint32_t x,y;
-		uint32_t &u = x;
-		uint32_t &v = y;
-		uint32_t &operator[](const uint8_t &index) { return *(&x+index); }
-		inline Vector2i operator+=(const Vector2i &other) { x+=other.x; y+=other.y; return *this; }
-		inline Vector2i operator+(const Vector2i &other) { return {x+other.x,y+other.y}; }
-		inline Vector2i operator-=(const Vector2i &other) { x-=other.x; y-=other.y; return *this; }
-		inline Vector2i operator-(const Vector2i &other) { return {x-other.x,y-other.y}; }
-		inline Vector2i operator*=(const uint32_t &other) { x*=other; y*=other; return *this; }
-		inline Vector2i operator*(const uint32_t &other) { return {x*other,y*other}; }
+
+		int32_t x,y;
+
+		Vector2i(const int32_t &x, const int32_t &y) : x{x}, y{y} {}
+		int32_t &operator[](const uint8_t &index) { return *(&x+index); }
+		inline Vector2i  operator+ (const Vector2i &other) { return {x+other.x,y+other.y}; }
+		inline Vector2i& operator+=(const Vector2i &other) { return (*this=*this+other); }
+		inline Vector2i  operator- (const Vector2i &other) { return {x-other.x,y-other.y}; }
+		inline Vector2i& operator-=(const Vector2i &other) { return (*this=*this-other); }
+		inline Vector2i  operator* (const int32_t &other) { return {x*other,y*other}; }
+		inline Vector2i& operator*=(const int32_t &other) { return (*this=*this*other); }
+		inline Vector2i  operator/ (const int32_t &other) { return {x/other,y/other}; }
+		inline Vector2i& operator/=(const int32_t &other) { return (*this=*this/other); }
+
 	};
 
-
 	struct Vector2f : public raylib_c::Vector2 {
-		Vector2f() = default;
+		Vector2f() : raylib_c::Vector2() {}
+		Vector2f(const raylib_c::Vector2 &other) : raylib_c::Vector2(other) {} 
 		Vector2f(const float &x, const float &y) : raylib_c::Vector2{x,y} {}
 
 		float &operator[](const uint8_t &index) { return *(&x+index); }
-		
-		inline Vector2f operator+=(const Vector2f &other) { x+=other.x; y+=other.y; return *this; }
-		inline Vector2f operator+(const Vector2f &other) { return {x+other.x,y+other.y}; }
-		inline Vector2f operator-=(const Vector2f &other) { x-=other.x; y-=other.y; return *this; }
-		inline Vector2f operator-(const Vector2f &other) { return {x-other.x,y-other.y}; }
-		inline Vector2f operator*=(const float &other) { x*=other; y*=other; return *this; }
-		inline Vector2f operator*(const float &other) { return {x*other,y*other}; }
+		inline Vector2f  operator= (const Vector2f &other) { this->x=other.x; this->y=other.y; return *this; }
+		inline Vector2f  operator+ (const Vector2f &other) { return {x+other.x,y+other.y}; }
+		inline Vector2f& operator+=(const Vector2f &other) { *this=*this+other; return *this; }
+		inline Vector2f  operator- (const Vector2f &other) { return {x-other.x,y-other.y}; }
+		inline Vector2f& operator-=(const Vector2f &other) { *this=*this-other; return *this; }
+		inline Vector2f  operator* (const float &other) { return {x*other,y*other}; }
+		inline Vector2f& operator*=(const float &other) {  *this=*this*other; return *this; }
+		inline Vector2f  operator/ (const float &other) { return {x/other,y/other}; }
+		inline Vector2f& operator/=(const float &other) {  *this=*this/other; return *this; }
+
+		inline void DrawPixel(const Color &color) { raylib_c::DrawPixelV(*this,color); }
 	};
 	
 	struct Vector3f : public raylib_c::Vector3{
-		Vector3f() = default;
+
+		Vector3f() : raylib_c::Vector3() {}
+		Vector3f(const raylib_c::Vector3 &other) : raylib_c::Vector3(other) {} 
 		Vector3f(const float &x, const float &y, const float &z) : raylib_c::Vector3{x,y,z} {}
 
 		float &operator[](const uint8_t &index) { return *(&x+index); }
+		inline Vector3f  operator+ (const Vector3f &other) { return {x+other.x,y+other.y,z+other.z}; }
+		inline Vector3f& operator+=(const Vector3f &other) { *this=*this+other; return *this; }
+		inline Vector3f  operator- (const Vector3f &other) { return {x-other.x,y-other.y,z-other.z}; }
+		inline Vector3f& operator-=(const Vector3f &other) { *this=*this-other; return *this; }
+		inline Vector3f  operator* (const float &other) { return {x*other,y*other,z*other}; }
+		inline Vector3f& operator*=(const float &other) {  *this=*this*other; return *this; }
+		inline Vector3f  operator/ (const float &other) { return {x/other,y/other,z/other}; }
+		inline Vector3f& operator/=(const float &other) {  *this=*this/other; return *this; }
 
-		inline Vector3f operator+=(const Vector3f &other) { x+=other.x; y+=other.y; z+=other.z; return *this; }
-		inline Vector3f operator+(const Vector3f &other) { return {x+other.x,y+other.y,z+other.z}; }
-		inline Vector3f operator-=(const Vector3f &other) { x-=other.x; y-=other.y; z-=other.z; return *this; }
-		inline Vector3f operator-(const Vector3f &other) { return {x-other.x,y-other.y,z-other.z}; }
-		inline Vector3f operator*=(const float &other) { x*=other; y*=other; z*=other; return *this; }
-		inline Vector3f operator*(const float &other) { return {x*other,y*other,z*other}; }
+		inline Vector3f operator^(const Vector3f &other) { return {y*other.z-z*other.y, z*other.x-x*other.z, x*other.y-y*other.z}; }
+		inline float operator*(const Vector3f &other) { return x*other.x+y*other.y+z*other.z; }
+
+		inline void DrawPoint(const Color &color) { raylib_c::DrawPoint3D(*this,color); }
 	};
 
 	struct Vector4f : public raylib_c::Vector4{
-		Vector4f() = default;
+
+		Vector4f() : raylib_c::Vector4() {}
+		Vector4f(const raylib_c::Vector4 &other) : raylib_c::Vector4(other) {} 
 		Vector4f(const float &x, const float &y, const float &z, const float &w) : raylib_c::Vector4{x,y,z,w} {}
+		Vector4f(const Vector2f &v1, const Vector2f &v2) : raylib_c::Vector4{v1.x,v1.y,v2.x,v2.y} {}
 
 		float &operator[](const uint8_t &index) { return *(&x+index); }
 
-		inline Vector4f operator+=(const Vector4f &other) { x+=other.x; y+=other.y; z+=other.z; w+=other.w; return *this; }
-		inline Vector4f operator+(const Vector4f &other) { return {x+other.x,y+other.y,z+other.z,w+other.w}; }
-		inline Vector4f operator-=(const Vector4f &other) { x-=other.x; y-=other.y; z-=other.z; w-=other.w; return *this; }
-		inline Vector4f operator-(const Vector4f &other) { return {x-other.x,y-other.y,z-other.z,w-other.w}; }
-		inline Vector4f operator*=(const float &other) { x*=other; y*=other; z*=other; w*=other; return *this; }
-		inline Vector4f operator*(const float &other) { return {x*other,y*other,z*other,w*other}; }
+		inline Vector4f  operator+(const Vector4f &other) { return {x+other.x,y+other.y,z+other.z,w+other.w}; }
+		inline Vector4f& operator+=(const Vector4f &other) {  *this=*this+other; return *this; }
+		inline Vector4f  operator-(const Vector4f &other) { return {x-other.x,y-other.y,z-other.z,w-other.w}; }
+		inline Vector4f& operator-=(const Vector4f &other) {  *this=*this-other; return *this; }
+		inline Vector4f  operator*(const float &other)  { return {x*other,y*other,z*other,w*other}; }
+		inline Vector4f& operator*=(const float &other) {  *this=*this*other; return *this; }
+		inline Vector4f  operator/(const float &other)  { return {x/other,y/other,z/other,w/other}; }
+		inline Vector4f& operator/=(const float &other) {  *this=*this/other; return *this; }
+	};
+
+	// Quaternion Representation
+	typedef Vector4f Quaternion;
+
+	// Matrix, 4x4 components, column major, OpenGL style, right handed
+	struct Matrix4f : public raylib_c::Matrix {
+		
+		Matrix4f() : raylib_c::Matrix() {}
+		Matrix4f(const raylib_c::Matrix &other) : raylib_c::Matrix{other} {} 
+		Matrix4f(const Vector4f &v1, const Vector4f &v2, const Vector4f &v3, const Vector4f &v4) : 
+			raylib_c::Matrix{v1.x,v2.x,v3.x,v4.x, v1.y,v2.y,v3.y,v4.y, v1.z,v2.z,v3.z,v4.z, v1.w,v2.w,v3.w,v4.w} {}
+
+		float &operator[](const uint8_t &index) { return *(&m0+index); }
+		float &operator()(const uint8_t &row, const uint8_t &col) { return *(&m0+row*4+col); }
+	};
+
+	// Rectangle, 4 components
+	struct Rectangle : public raylib_c::Rectangle {
+		
+		Rectangle() : raylib_c::Rectangle{} {}
+		Rectangle(const float &x, const float &y, const float &width, const float &height) : raylib_c::Rectangle{x,y,width,height} {}
+		Rectangle(const Vector2f& position, const Vector2f& dimensions) : raylib_c::Rectangle{position.x,position.y,dimensions.x,dimensions.y} {}
+
+		inline void Draw(const Color& colorFill, const Color &colorLine={0,0,0,0}) { 
+			raylib_c::DrawRectangle(x,y,width,height,colorFill); 
+			if(colorFill.a) raylib_c::DrawRectangleLines(x,y,width,height,colorLine);
+		}
+		inline void Draw(const Vector2f &origin, const float &rotation, const Color& color) { raylib_c::DrawRectanglePro(*this,origin,rotation,color); }
+		inline void DrawLine(const Color& color, const float thickness=1.0f) { raylib_c::DrawRectangleLinesEx(*this,thickness,color); }
+
+		private:
+		Rectangle(const raylib_c::Rectangle &other) :  raylib_c::Rectangle{other} {}
+	};
+
+	struct Texture;
+
+	// Image, pixel data stored in CPU memory (RAM)
+	struct Image : public raylib_c::Image {
+
+		Image() : raylib_c::Image(){}
+		~Image() { raylib_c::UnloadImage(*this); }
+
+		Image(const std::string &fileName) : raylib_c::Image{LoadFromFile(fileName)} {} // Load image from file into CPU memory (RAM)
+		Image(const std::string &fileName, const uint32_t &width, const uint32_t &height, const uint32_t &format, const uint32_t &headerSize) : raylib_c::Image{LoadFromFileRaw(fileName, width, height, format, headerSize)} {} // Load image from RAW file data
+		Image(const std::string &fileName, int32_t &frames) : raylib_c::Image{LoadAnimation(fileName,frames)} {} // Load image from RAW file data
+		Image(const std::string &fileType,  const uint8_t *fileData, const uint32_t &dataSize) : raylib_c::Image{LoadFromMemory(fileType,fileData,dataSize)} {}
+
+		[[nodiscard]] static inline Image LoadFromFile(const std::string &fileName) { return raylib_c::LoadImage(fileName.c_str()); }		// Load image from file into CPU memory (RAM)
+		[[nodiscard]] static inline Image LoadFromFileRaw (const std::string &fileName, const uint32_t &width, const uint32_t &height, const uint32_t &format, const uint32_t &headerSize) { return raylib_c::LoadImageRaw(fileName.c_str(), width, height, format, headerSize); }       				// Load image from RAW file data
+		[[nodiscard]] static inline Image LoadAnimation(const std::string &fileName, int32_t &frames) { return raylib_c::LoadImageAnim(fileName.c_str(), &frames); }	// Load image sequence from file (frames appended to image.data)
+		[[nodiscard]] static inline Image LoadFromMemory(const std::string &fileType,  const uint8_t *fileData, const uint32_t &dataSize) { return raylib_c::LoadImageFromMemory(fileType.c_str(), fileData, dataSize); }	// Load image from memory buffer
+		[[nodiscard]] static inline Image LoadFromTexture(const raylib_c::Texture &texture) { return raylib_c::LoadImageFromTexture(texture);}	// Load image from GPU texture data
+		[[nodiscard]] static inline Image LoadFromScreen() { return raylib_c::LoadImageFromScreen(); }								// Load image from screen buffer and (screenshot)
+    
+		friend class Texture;
+
+		private:
+		Image(const raylib_c::Image &other) : raylib_c::Image{other} {}
+	};
+
+	// Texture, tex data stored in GPU memory (VRAM)
+	struct Texture : public raylib_c::Texture {
+	private:
+		Texture(const raylib_c::Texture &other) : raylib_c::Texture{other} {}
+
+	public:
+		friend struct Image;
+		Texture() = default;			
+		Texture(const Texture &) = delete;
+		Texture(Texture &&other) = default;
+
+		Texture(const std::string &fileName) : raylib_c::Texture{raylib_c::LoadTexture(fileName.c_str())} {}
+		Texture(const raylib_c::Image &image) : raylib_c::Texture{raylib_c::LoadTextureFromImage(image)} {}
+		~Texture() { Unload(); }
+
+		[[nodiscard]] static inline Texture LoadFromFile(const std::string &fileName) { return raylib_c::LoadTexture(fileName.c_str()); }
+		[[nodiscard]] static inline Texture LoadFromImage(const Image &image) { return raylib_c::LoadTextureFromImage(image); }
+
+		void Unload() { raylib_c::UnloadTexture(*this); }
+
+		void Update(const void *pixels) { raylib_c::UpdateTexture(*this,pixels); }
+		void Update(const Rectangle &rec, const void *pixels) { raylib_c::UpdateTextureRec(*this,rec,pixels); }
+	};
+
+	Image TextureToImage(const Texture &Texture) { return Image::LoadFromTexture(Texture); }
+	Texture ImageToTexture(const Image &image) { return Texture::LoadFromImage(image); }
+
+	struct RenderTexture : public raylib_c::RenderTexture {		
+	private:
+		RenderTexture(const raylib_c::RenderTexture &other) : raylib_c::RenderTexture{other.id, other.texture, other.depth} {}
+
+	public:
+		RenderTexture() = default;
+		RenderTexture(const RenderTexture &) = delete;
+		RenderTexture(RenderTexture &&) = default;
+		~RenderTexture() { raylib_c::UnloadRenderTexture(*this); }
+
+		RenderTexture(const Vector2i &size) : raylib_c::RenderTexture(raylib_c::LoadRenderTexture(size.x, size.y)) {}
+
+		// Static wrappers for raylib
+		[[nodiscard]] static inline RenderTexture LoadRenderTexture(const Vector2i &size) { return raylib_c::LoadRenderTexture(size.x, size.y); }
 	};
 
 	// Camera, defines position/orientation in 3d space
@@ -145,65 +275,31 @@ namespace raylib {
 
 		// Camera system modes
 		enum Mode{
-			Custom = 0,             // Custom camera
-			Free,                   // Free camera
-			Orbital,                // Orbital camera
-			FirstPerson,            // First person camera
-			ThirdPerson             // Third person camera
+			Custom = 0,		// Custom camera
+			Free,			// Free camera
+			Orbital,		// Orbital camera
+			FirstPerson,	// First person camera
+			ThirdPerson		// Third person camera
 		};
-	
-		void SetMode(const Camera3D::Mode &system) { raylib_c::SetCameraMode( *this, system); }
-		void Update() { raylib_c::UpdateCamera( this); }
 
+
+		Camera3D() : raylib_c::Camera3D{ Vector3f{}, Vector3f{}, {0.0f,1.0f,0.0f}, 45.f, Type::Perspective} {}
+		Camera3D(const Vector3f &position, const Vector3f &target, const Vector3f &up={0.0f,1.0f,0.0f}, const float &fovy=45.f, const Type &type=Type::Perspective) : raylib_c::Camera3D{position,target,up,fovy,type} {}
+
+		void SetMode(const Camera3D::Mode &mode) { raylib_c::SetCameraMode( *this, mode); }
+		void Update() { raylib_c::UpdateCamera(this); }
+	
 	};
 
-	typedef Camera3D Camera;    // Camera type fallback, defaults to Camera3D
+	typedef Camera3D Camera;	// Camera type fallback, defaults to Camera3D
 
-	// Camera2D, defines position/orientation in 2d space
+
 	struct Camera2D : public raylib_c::Camera2D {
+		Vector2f offset;	// Camera offset (displacement from target)
+		Vector2f target;	// Camera target (rotation and zoom origin)
+
+		Camera2D() : raylib_c::Camera2D{{0.f,0.f},{0.f,0.f},0.f,1.f} {}
 	};
-
-/*
-	// Texture, tex data stored in GPU memory (VRAM)
-	class Texture {
-		
-		::Texture mTextureData;
-
-
-	public:
-	
-		//operator ::Texture() { return {ID,Width,Height,Mipmaps,Format}; }
-		//operator ::Texture() const { return {ID,Width,Height,Mipmaps,Format}; }
-		Texture() = default;
-		Texture(const Texture &) = default;		
-		Texture(const ::Texture &other) : mTextureData{other} {}
-		Texture(const std::string &fileName) { this->mTextureData = ::LoadTexture(fileName.c_str()); }
-		Texture(const Image &image) { this->mTextureData = ::LoadTextureFromImage(image); }
-		~Texture() { UnloadTexture(mTextureData); }
-
-		::Texture &GetTextuteData() { return mTextureData; }
-		::Texture GetTextuteData() const { return mTextureData; }
-
-		inline uint32_t &GetID() { return mTextureData.id; }
-		inline uint32_t GetID() const { return mTextureData.id; }
-
-		inline int32_t &GetWidth() { return mTextureData.width; }
-		inline int32_t GetWidth() const { return mTextureData.width; }
-
-		inline int32_t &GetHeight() { return mTextureData.height; }
-		inline int32_t GetHeight() const { return mTextureData.height; }
-
-		void Draw(const Vector2i &position, const Color &tint) { ::DrawTexture(mTextureData, position.x, position.y, tint); }
-		//void Draw(const Vector2f &position, const Color &tint) { ::DrawTexture(mTextureData, (int32_t)position.x, (int32_t)position.y, tint); }
-	};
-
-	// Texture2D, same as Texture
-	typedef Texture Texture2D;
-
-	// TextureCubemap, same as Texture
-	typedef Texture TextureCubemap;
-
-*/
 
 // ==================================================================================================
 // Window class
@@ -216,51 +312,35 @@ namespace raylib {
 		UniqueWindow(const uint32_t &width, const uint32_t &height, const std::string &title) { raylib_c::InitWindow(width,height,title.c_str()); }
 		~UniqueWindow() { raylib_c::CloseWindow(); }
 
-		static bool ShouldClose() { return raylib_c::WindowShouldClose(); }
+		inline bool ShouldClose() { return raylib_c::WindowShouldClose(); }
 
-/*		static void Close() { ::CloseWindow(); }
-		static bool IsReady() { return ::IsWindowReady();}				// Check if window has been initialized successfully
-		static bool IsFullScreen() { return ::IsWindowFullscreen();}	// Check if window is currently fullscreen
-		static bool IsHidden() { return ::IsWindowHidden();}			// Check if window is currently hidden (only PLATFORM_DESKTOP)
-		static bool IsMinimized() { return ::IsWindowMinimized();}    	// Check if window is currently minimized (only PLATFORM_DESKTOP)
-		static bool IsMaximized() { return ::IsWindowMaximized();}		// Check if window is currently maximized (only PLATFORM_DESKTOP)
-		static bool IsFocused() { return ::IsWindowFocused();}			// Check if window is currently focused (only PLATFORM_DESKTOP)
-		static bool IsResized() { return ::IsWindowResized();}			// Check if window has been resized last frame
-		static bool IsState(uint32_t flags) { return ::IsWindowState(flags);}	// Check if one specific window flag is enabled
-		static void SetState(uint32_t flags) { ::SetWindowState(flags);}		// Set window configuration state using flags
-		static void ClearState(uint32_t flags) { ::ClearWindowState(flags);}	// Clear window configuration state flags
-		static void ToggleFullscreen() { ::ToggleFullscreen();}					// Toggle window state: fullscreen/windowed (only PLATFORM_DESKTOP)
-		static void Maximize() { ::MaximizeWindow();}							// Set window state: maximized, if resizable (only PLATFORM_DESKTOP)
-		static void Minimize() { ::MinimizeWindow();}							// Set window state: minimized, if resizable (only PLATFORM_DESKTOP)
-		static void Restore()  { ::RestoreWindow();	}	    					// Set window state: not minimized/maximized (only PLATFORM_DESKTOP)
-		static void SetIcon(Image image) { ::SetWindowIcon(image); }			// Set icon for window (only PLATFORM_DESKTOP)
-		static void SetTitle(const std::string &title) { ::SetWindowTitle(title.c_str());}	// Set title for window (only PLATFORM_DESKTOP)
-		static void SetPosition(uint32_t x, uint32_t y) { ::SetWindowPosition(x, y);}	// Set window position on screen (only PLATFORM_DESKTOP)
-		static void SetPosition(Vector2 pos) { ::SetWindowPosition(pos.x, pos.y);}	// Set window position on screen (only PLATFORM_DESKTOP)
-		static void SetMonitor(uint32_t monitor) { ::SetWindowMonitor(monitor); }   // Set monitor for the current window (fullscreen mode)
-		static void SetMinSize(uint32_t width, uint32_t height) { ::SetWindowMinSize(width, height); } // Set window minimum dimensions (for FLAG_WINDOW_RESIZABLE)
-		static void SetSize(uint32_t width, uint32_t height) { ::SetWindowSize(width, height); }	// Set window dimensions
-		static void *GetHandle() { return ::GetWindowHandle(); };		// Get native window handle
-		static Vector2 GetPosition() { return ::GetWindowPosition(); }	// Get window position XY on monitor
-		static int GetWidth() { return GetScreenWidth(); }
-		static int GetHeight() { return GetScreenHeight(); }
-		static Vector2 GetScaleDPI() { return ::GetWindowScaleDPI(); }	// Get window scale DPI factor
-*/
-/*		
-	int GetMonitorCount(void);                                              // Get number of connected monitors
-	int GetCurrentMonitor(void);                                            // Get current connected monitor
-	Vector2 GetMonitorPosition(int monitor);                                // Get specified monitor position
-	int GetMonitorWidth(int monitor);                                       // Get specified monitor width (max available by monitor)
-	int GetMonitorHeight(int monitor);                                      // Get specified monitor height (max available by monitor)
-	int GetMonitorPhysicalWidth(int monitor);                               // Get specified monitor physical width in millimetres
-	int GetMonitorPhysicalHeight(int monitor);                              // Get specified monitor physical height in millimetres
-	int GetMonitorRefreshRate(int monitor);                                 // Get specified monitor refresh rate
-	Vector2 GetWindowPosition(void);                                        // Get window position XY on monitor
-	Vector2 GetWindowScaleDPI(void);                                        // Get window scale DPI factor
-	const char *GetMonitorName(int monitor);                                // Get the human-readable, UTF-8 encoded name of the primary monitor
-	void SetClipboardText(const char *text);                                // Set clipboard text content
-	const char *GetClipboardText(void);                                     // Get clipboard text content
-*/
+		inline void Close() { raylib_c::CloseWindow(); }
+		inline bool IsReady() { return raylib_c::IsWindowReady();}				// Check if window has been initialized successfully
+		inline bool IsFullScreen() { return raylib_c::IsWindowFullscreen();}	// Check if window is currently fullscreen
+		inline bool IsHidden() { return raylib_c::IsWindowHidden();}			// Check if window is currently hidden (only PLATFORM_DESKTOP)
+		inline bool IsMinimized() { return raylib_c::IsWindowMinimized();}    	// Check if window is currently minimized (only PLATFORM_DESKTOP)
+		inline bool IsMaximized() { return raylib_c::IsWindowMaximized();}		// Check if window is currently maximized (only PLATFORM_DESKTOP)
+		inline bool IsFocused() { return raylib_c::IsWindowFocused();}			// Check if window is currently focused (only PLATFORM_DESKTOP)
+		inline bool IsResized() { return raylib_c::IsWindowResized();}			// Check if window has been resized last frame
+		inline bool IsState(uint32_t flags) { return raylib_c::IsWindowState(flags);}	// Check if one specific window flag is enabled
+		inline void SetState(uint32_t flags) { raylib_c::SetWindowState(flags);}		// Set window configuration state using flags
+		inline void ClearState(uint32_t flags) { raylib_c::ClearWindowState(flags);}	// Clear window configuration state flags
+		inline void ToggleFullscreen() { raylib_c::ToggleFullscreen();}					// Toggle window state: fullscreen/windowed (only PLATFORM_DESKTOP)
+		inline void Maximize() { raylib_c::MaximizeWindow();}							// Set window state: maximized, if resizable (only PLATFORM_DESKTOP)
+		inline void Minimize() { raylib_c::MinimizeWindow();}							// Set window state: minimized, if resizable (only PLATFORM_DESKTOP)
+		inline void Restore()  { raylib_c::RestoreWindow();	}	    					// Set window state: not minimized/maximized (only PLATFORM_DESKTOP)
+		inline void SetIcon(const raylib_c::Image &image) { raylib_c::SetWindowIcon(image); }			// Set icon for window (only PLATFORM_DESKTOP)
+		inline void SetTitle(const std::string &title) { raylib_c::SetWindowTitle(title.c_str());}	// Set title for window (only PLATFORM_DESKTOP)
+		inline void SetPosition(uint32_t x, uint32_t y) { raylib_c::SetWindowPosition(x, y);}	// Set window position on screen (only PLATFORM_DESKTOP)
+		inline void SetPosition(Vector2f pos) { raylib_c::SetWindowPosition(pos.x, pos.y);}	// Set window position on screen (only PLATFORM_DESKTOP)
+		inline void SetMonitor(uint32_t monitor) { raylib_c::SetWindowMonitor(monitor); }   // Set monitor for the current window (fullscreen mode)
+		inline void SetMinSize(uint32_t width, uint32_t height) { raylib_c::SetWindowMinSize(width, height); } // Set window minimum dimensions (for FLAG_WINDOW_RESIZABLE)
+		inline void SetSize(uint32_t width, uint32_t height) { raylib_c::SetWindowSize(width, height); }	// Set window dimensions
+		inline void *GetHandle() { return raylib_c::GetWindowHandle(); };		// Get native window handle
+		inline Vector2f GetPosition() { return raylib_c::GetWindowPosition(); }	// Get window position XY on monitor
+		inline int GetWidth() { return raylib_c::GetScreenWidth(); }
+		inline int GetHeight() { return raylib_c::GetScreenHeight(); }
+//		inline Vector2f GetScaleDPI() { return raylib_c::GetWindowScaleDPI(); }	// Get window scale DPI factor
 
 	};
 	typedef UniqueWindow Window;
@@ -272,28 +352,35 @@ namespace raylib {
 
 		static void ClearBackground(const Color &color) { raylib_c::ClearBackground(color); } // Set background color (framebuffer clear color)
 
-		struct Drawing{
+		struct DrawingScope{
 			bool run;
-			Drawing() : run(true) { raylib_c::BeginDrawing(); } // Setup canvas (framebuffer) to start drawing
-			~Drawing() { raylib_c::EndDrawing(); }               // End canvas drawing and swap buffers (double buffering)
+			DrawingScope() : run{true} { raylib_c::BeginDrawing(); } // Setup canvas (framebuffer) to start drawing
+			~DrawingScope() { raylib_c::EndDrawing(); }               // End canvas drawing and swap buffers (double buffering)
 		};
 		
-		struct Mode2D{
+		struct Mode2DScope{
 			bool run;
-			Mode2D(const Camera2D &camera) : run(true) { raylib_c::BeginMode2D(camera); } 	// Setup canvas (framebuffer) to start drawing
-			~Mode2D() { raylib_c::EndMode2D(); }               								// End canvas drawing and swap buffers (double buffering)
+			Mode2DScope(const Camera2D &camera) : run{true} { raylib_c::BeginMode2D(camera); } 	// Setup canvas (framebuffer) to start drawing
+			~Mode2DScope() { raylib_c::EndMode2D(); }               							// End canvas drawing and swap buffers (double buffering)
 		};
 
-		struct Mode3D{
+		struct Mode3DScope{
 			bool run;
-			Mode3D(const Camera3D &camera) : run(true) { raylib_c::BeginMode3D(camera); } 	// Setup canvas (framebuffer) to start drawing
-			~Mode3D() { raylib_c::EndMode3D(); }               								// End canvas drawing and swap buffers (double buffering)
+			Mode3DScope(const Camera3D &camera) : run(true) { raylib_c::BeginMode3D(camera); } 	// Setup canvas (framebuffer) to start drawing
+			~Mode3DScope() { raylib_c::EndMode3D(); }               							// End canvas drawing and swap buffers (double buffering)
 		};
-		
+
+		struct ModeTextureScope{
+			bool run;
+			ModeTextureScope(RenderTexture &target) : run{true} { raylib_c::BeginTextureMode(target); } // Setup texture to start drawing
+			~ModeTextureScope() { raylib_c::EndTextureMode(); }               							// End texture drawing
+		};
+
 	}
-	#define Drawing() for(raylib::render::Drawing scope; scope.run; scope.run=false)
-	#define Mode2D(camera2D) for(raylib::render::Mode2D scope(camera2D); scope.run; scope.run=false)
-	#define Mode3D(camera3D) for(raylib::render::Mode3D scope(camera3D); scope.run; scope.run=false)
+	#define Drawing for(raylib::render::DrawingScope scope; scope.run; scope.run=false)
+	#define Mode2D(camera2D) for(raylib::render::Mode2DScope scope(camera2D); scope.run; scope.run=false)
+	#define Mode3D(camera3D) for(raylib::render::Mode3DScope scope(camera3D); scope.run; scope.run=false)
+	#define ModeTexture(target) for(raylib::render::ModeTextureScope scope(target); scope.run; scope.run=false)
 /*
 	static void BeginTextureMode(RenderTexture2D target) { ::BeginTextureMode(target); }    // Begin drawing to render texture
 	static void EndTextureMode() { :: EndTextureMode(); }                                   // Ends drawing to render texture
@@ -307,10 +394,16 @@ namespace raylib {
 	static void EndVrStereoMode() { ::EndVrStereoMode(); } 									// End stereo rendering (requires VR simulator)
 */
 
-	namespace Draw {
+	namespace draw {
+
 		// Shapes
 		static void Pixel(const Vector2f &position, const Color &color) { raylib_c::DrawPixelV((Vector2f)position,color); }									// Draw a pixel (Vector version)
-		static void Rectangle(const Vector2f &position, const Vector2f &size, const Color &color) { raylib_c::DrawRectangleV(position,size,color); }	// Draw a color-filled rectangle
+		
+		static void Rectangle(const Vector2f &position, const Vector2f &size, const Color &colorFill, const Color &colorLine={0,0,0,0} ) { // Draw a color-filled rectangle
+			raylib_c::DrawRectangleV(position,size,colorFill);
+			if(colorLine.a) raylib_c::DrawRectangleLines(position.x,position.y,size.x,size.y,colorLine);
+		}	
+		
 		static void RectangleLines(const Vector2f &position, const Vector2f &size, const Color &color) { raylib_c::DrawRectangleLines(position.x,position.y,size.x,size.y,color); }	// Draw a color-filled rectangle		
 		
 		// Models

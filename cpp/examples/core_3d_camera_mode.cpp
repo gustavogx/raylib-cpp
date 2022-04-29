@@ -18,15 +18,10 @@ int main(void)
 
 	// Initialization
 	//--------------------------------------------------------------------------------------
-	Window window({800,450,"raylib [core] example - 3d camera mode"});
+	Window window(800,450,"raylib [core] example - 3d camera mode");
 
 	// Define the camera to look into our 3d world
-	Camera3D camera;
-	camera.position = { 0.0f, 10.0f, 10.0f };  // Camera position
-	camera.target = { 0.0f, 0.0f, 0.0f };      // Camera looking at point
-	camera.up = { 0.0f, 1.0f, 0.0f };          // Camera up vector (rotation towards target)
-	camera.fovy = 45.0f;                       // Camera field-of-view Y
-	camera.projection = Camera3D::Perspective;    // Camera mode type
+	Camera3D camera( { 0.0f, 10.0f, 10.0f }, { 0.0f, 0.0f, 0.0f } );  // Camera position and looking at point
 
 	Vector3f cubePosition { 0.0f, 0.0f, 0.0f };
 
@@ -43,16 +38,15 @@ int main(void)
 
 		// Draw
 		//----------------------------------------------------------------------------------
-		Drawing(){
+		Drawing{
 
 			render::ClearBackground(Color::RayWhite);
 
 			Mode3D(camera){
 
-				Draw::Cube(cubePosition, {2.0f, 2.0f, 2.0f}, Color::Red);
-				Draw::CubeWires(cubePosition, {2.0f, 2.0f, 2.0f}, Color::Maroon);
-
-				Draw::Grid(10, 1.0f);
+				draw::Cube(cubePosition, {2.0f, 2.0f, 2.0f}, Color::Red);
+				draw::CubeWires(cubePosition, {2.0f, 2.0f, 2.0f}, Color::Maroon);
+				draw::Grid(10, 1.0f);
 
 			}
 
