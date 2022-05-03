@@ -8,12 +8,12 @@ int main(){
 	render::SetTargetFPS(60);
 
 	Camera3D camera;
-	camera.position = { 0.0f, 5.0f, -10.0f };  // Camera position
+	camera.position = { 0.0f, 5.0f, 10.0f };  // Camera position
 	camera.target = { 0.0f, 0.0f, 0.0f };      // Camera looking at point
 	camera.up = { 0.0f, 1.0f, 0.0f };          // Camera up vector (rotation towards target)
 	camera.fovy = 45.0f;                       // Camera field-of-view Y
 	camera.projection = Camera3D::Perspective;    // Camera mode type
-	
+	camera.SetMode(Camera::Free);
 	raylib_c::Model model = raylib_c::LoadModel("girl.glb");
 
 	std::cout << sizeof(Vector2i) << "\n";
@@ -30,10 +30,10 @@ int main(){
 			camera.target.z -= 1.f;
 		}
 
-		Drawing(){
+		Drawing{
 			
 
-			render::ClearBackground(Color::Black);
+			render::ClearBackground(Color::DarkGray);
 
 			Mode3D(camera){
 				raylib_c::DrawGrid(20,10.f);

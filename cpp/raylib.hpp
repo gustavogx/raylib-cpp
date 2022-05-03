@@ -2,24 +2,58 @@
 
 #include <string>
 #include <iostream>
+#include <sstream>
 #include <random>
 
 namespace raylib_c{
 	#include "raylib.h"
-	//#include "rlgl.h"
+	#include "rlgl.h"
 }
 
 namespace raylib {
 
 	// ==================================================================================================
-	// Structures
+	// Foreword Declarations
+	// ==================================================================================================
+
+
+	struct Color;
+
+	struct Vector2i;
+	struct Vector2f;
+	struct Vector3f;
+	struct Vector4f;
+	struct Matrix4f;
+
+	struct Rectangle;
+	struct Image;
+	struct Texture;
+	typedef Texture Texture2D;
+	struct RenderTexture;
+
+	struct GlyphInfo;
+	struct Text;
+	struct UniqueWindow;
+	typedef UniqueWindow Window;
+
+	struct Camera3D;
+	struct Camera2D;
+	typedef Camera3D Camera;	// Camera type fallback, defaults to Camera3D
+
+	struct DrawingScope;
+	struct Mode2DScope;
+	struct Mode3DScope;
+	struct ModeTextureScope;
+
+	// ==================================================================================================
+	// Definitions
 	// ==================================================================================================
 
 	// Color, 4 components, R8G8B8A8 (32bit)
 	struct Color : public raylib_c::Color {
 
 		// Wrappers 
-		inline void Fade(Color &color, const float &alpha) { color = raylib_c::Fade(color,alpha); }
+		static inline void Fade(Color &color, const float &alpha) { color = raylib_c::Fade(color,alpha); }
 
 		Color(const raylib_c::Color &color) : raylib_c::Color(color) {} 
 		Color(const uint8_t &red, const uint8_t &green, const uint8_t &blue, const uint8_t &alpha=255) : raylib_c::Color{red,green,blue,alpha} {}
@@ -56,33 +90,34 @@ namespace raylib {
 
 	};
 
-	Color const Color::LightGray 	= LIGHTGRAY;
-	Color const Color::Gray 		= GRAY;
-	Color const Color::DarkGray 	= DARKGRAY;
-	Color const Color::Yellow 		= YELLOW;
-	Color const Color::Gold 		= GOLD;
-	Color const Color::Orange 		= ORANGE;
-	Color const Color::Pink			= PINK;
-	Color const Color::Red			= RED;
-	Color const Color::Maroon		= MAROON;
-	Color const Color::Green		= GREEN;
-	Color const Color::Lime			= LIME;
-	Color const Color::DarkGreen	= DARKGREEN;
-	Color const Color::SkyBlue		= SKYBLUE;
-	Color const Color::Blue			= BLUE;
-	Color const Color::DarkBlue		= DARKBLUE;
-	Color const Color::Purple		= PURPLE;
-	Color const Color::Violet		= VIOLET;
-	Color const Color::DarkPurple	= DARKPURPLE;
-	Color const Color::Beige		= BEIGE;
-	Color const Color::Brown		= BROWN;
-	Color const Color::DarkBrown	= DARKBROWN;
+		// Color static constants
+		Color const Color::LightGray 	= LIGHTGRAY;
+		Color const Color::Gray 		= GRAY;
+		Color const Color::DarkGray 	= DARKGRAY;
+		Color const Color::Yellow 		= YELLOW;
+		Color const Color::Gold 		= GOLD;
+		Color const Color::Orange 		= ORANGE;
+		Color const Color::Pink			= PINK;
+		Color const Color::Red			= RED;
+		Color const Color::Maroon		= MAROON;
+		Color const Color::Green		= GREEN;
+		Color const Color::Lime			= LIME;
+		Color const Color::DarkGreen	= DARKGREEN;
+		Color const Color::SkyBlue		= SKYBLUE;
+		Color const Color::Blue			= BLUE;
+		Color const Color::DarkBlue		= DARKBLUE;
+		Color const Color::Purple		= PURPLE;
+		Color const Color::Violet		= VIOLET;
+		Color const Color::DarkPurple	= DARKPURPLE;
+		Color const Color::Beige		= BEIGE;
+		Color const Color::Brown		= BROWN;
+		Color const Color::DarkBrown	= DARKBROWN;
 
-	Color const Color::White		= WHITE;
-	Color const Color::Black		= BLACK;
-	Color const Color::Blank		= BLANK;
-	Color const Color::Magenta		= MAGENTA;
-	Color const Color::RayWhite		= RAYWHITE;
+		Color const Color::White		= WHITE;
+		Color const Color::Black		= BLACK;
+		Color const Color::Blank		= BLANK;
+		Color const Color::Magenta		= MAGENTA;
+		Color const Color::RayWhite		= RAYWHITE;
 
 	// Integer Vector 2D
 	struct Vector2i{
@@ -103,7 +138,7 @@ namespace raylib {
 	};
 
 	struct Vector2f : public raylib_c::Vector2 {
-		Vector2f() : raylib_c::Vector2() {}
+		Vector2f() = default;
 		Vector2f(const raylib_c::Vector2 &other) : raylib_c::Vector2(other) {} 
 		Vector2f(const float &x, const float &y) : raylib_c::Vector2{x,y} {}
 
@@ -121,11 +156,21 @@ namespace raylib {
 		inline void DrawPixel(const Color &color) { raylib_c::DrawPixelV(*this,color); }
 	};
 	
-	struct Vector3f : public raylib_c::Vector3{
+	struct Vector3f : public raylib_c::Vector3 {
 
-		Vector3f() : raylib_c::Vector3() {}
-		Vector3f(const raylib_c::Vector3 &other) : raylib_c::Vector3(other) {} 
+		Vector3f() = default;
+		//Vector3f(const Vector3f&) = default;
+		//Vector3f(Vector3f &&) = default;
+
 		Vector3f(const float &x, const float &y, const float &z) : raylib_c::Vector3{x,y,z} {}
+
+		static inline Vector3f UnitX() { return {1.f,0.f,0.f}; }
+		static inline Vector3f UnitY() { return {0.f,1.f,0.f}; }
+		static inline Vector3f UnitZ() { return {0.f,0.f,1.f}; }
+		
+		static inline Vector3f XDir(const float &mag=1.0f) { return {mag,0.f,0.f};}
+		static inline Vector3f YDir(const float &mag=1.0f) { return {0.f,mag,0.f};}
+		static inline Vector3f ZDir(const float &mag=1.0f) { return {0.f,0.f,mag};}
 
 		float &operator[](const uint8_t &index) { return *(&x+index); }
 		inline Vector3f  operator+ (const Vector3f &other) { return {x+other.x,y+other.y,z+other.z}; }
@@ -141,11 +186,14 @@ namespace raylib {
 		inline float operator*(const Vector3f &other) { return x*other.x+y*other.y+z*other.z; }
 
 		inline void DrawPoint(const Color &color) { raylib_c::DrawPoint3D(*this,color); }
+
+		protected:
+		Vector3f(const raylib_c::Vector3 &other) : raylib_c::Vector3(other) {} 
 	};
 
 	struct Vector4f : public raylib_c::Vector4{
 
-		Vector4f() : raylib_c::Vector4() {}
+		Vector4f() = default;
 		Vector4f(const raylib_c::Vector4 &other) : raylib_c::Vector4(other) {} 
 		Vector4f(const float &x, const float &y, const float &z, const float &w) : raylib_c::Vector4{x,y,z,w} {}
 		Vector4f(const Vector2f &v1, const Vector2f &v2) : raylib_c::Vector4{v1.x,v1.y,v2.x,v2.y} {}
@@ -168,10 +216,13 @@ namespace raylib {
 	// Matrix, 4x4 components, column major, OpenGL style, right handed
 	struct Matrix4f : public raylib_c::Matrix {
 		
-		Matrix4f() : raylib_c::Matrix() {}
+		Matrix4f() = default;
 		Matrix4f(const raylib_c::Matrix &other) : raylib_c::Matrix{other} {} 
 		Matrix4f(const Vector4f &v1, const Vector4f &v2, const Vector4f &v3, const Vector4f &v4) : 
 			raylib_c::Matrix{v1.x,v2.x,v3.x,v4.x, v1.y,v2.y,v3.y,v4.y, v1.z,v2.z,v3.z,v4.z, v1.w,v2.w,v3.w,v4.w} {}
+
+		Matrix4f(const float diag) : 
+			raylib_c::Matrix{diag,0,0,0, 0,diag,0,0, 0,0,diag,0, 0,0,0,0} {}
 
 		float &operator[](const uint8_t &index) { return *(&m0+index); }
 		float &operator()(const uint8_t &row, const uint8_t &col) { return *(&m0+row*4+col); }
@@ -195,77 +246,244 @@ namespace raylib {
 		Rectangle(const raylib_c::Rectangle &other) :  raylib_c::Rectangle{other} {}
 	};
 
-	struct Texture;
-
 	// Image, pixel data stored in CPU memory (RAM)
 	struct Image : public raylib_c::Image {
 
-		Image() : raylib_c::Image(){}
-		~Image() { raylib_c::UnloadImage(*this); }
+		friend struct Texture;
+		friend struct RenderTexture;
+		friend struct GlyphInfo;
 
+		Image(const Image&) = delete;
+		Image(Image &&)  = default;
+		~Image() { Unload(*this); }
+
+		inline Image operator=(Image &other) { return std::move( raylib_c::ImageCopy(other)); }
 		Image(const std::string &fileName) : raylib_c::Image{LoadFromFile(fileName)} {} // Load image from file into CPU memory (RAM)
 		Image(const std::string &fileName, const uint32_t &width, const uint32_t &height, const uint32_t &format, const uint32_t &headerSize) : raylib_c::Image{LoadFromFileRaw(fileName, width, height, format, headerSize)} {} // Load image from RAW file data
 		Image(const std::string &fileName, int32_t &frames) : raylib_c::Image{LoadAnimation(fileName,frames)} {} // Load image from RAW file data
 		Image(const std::string &fileType,  const uint8_t *fileData, const uint32_t &dataSize) : raylib_c::Image{LoadFromMemory(fileType,fileData,dataSize)} {}
-
+		Image(const int &width, const int &height, const int &checksX, const int &checksY, const Color &color1, const Color &color2) : 
+			raylib_c::Image{ raylib_c::GenImageChecked(width,height,checksX,checksY,color1,color2)} {} // Creates a checked image
+		
+		static inline void Unload(Image &image) { raylib_c::UnloadImage(image); }
 		[[nodiscard]] static inline Image LoadFromFile(const std::string &fileName) { return raylib_c::LoadImage(fileName.c_str()); }		// Load image from file into CPU memory (RAM)
 		[[nodiscard]] static inline Image LoadFromFileRaw (const std::string &fileName, const uint32_t &width, const uint32_t &height, const uint32_t &format, const uint32_t &headerSize) { return raylib_c::LoadImageRaw(fileName.c_str(), width, height, format, headerSize); }       				// Load image from RAW file data
 		[[nodiscard]] static inline Image LoadAnimation(const std::string &fileName, int32_t &frames) { return raylib_c::LoadImageAnim(fileName.c_str(), &frames); }	// Load image sequence from file (frames appended to image.data)
 		[[nodiscard]] static inline Image LoadFromMemory(const std::string &fileType,  const uint8_t *fileData, const uint32_t &dataSize) { return raylib_c::LoadImageFromMemory(fileType.c_str(), fileData, dataSize); }	// Load image from memory buffer
+		
 		[[nodiscard]] static inline Image LoadFromTexture(const raylib_c::Texture &texture) { return raylib_c::LoadImageFromTexture(texture);}	// Load image from GPU texture data
 		[[nodiscard]] static inline Image LoadFromScreen() { return raylib_c::LoadImageFromScreen(); }								// Load image from screen buffer and (screenshot)
     
-		friend class Texture;
-
-		private:
+		protected:
 		Image(const raylib_c::Image &other) : raylib_c::Image{other} {}
+		Image() : raylib_c::Image(){} 
 	};
 
 	// Texture, tex data stored in GPU memory (VRAM)
 	struct Texture : public raylib_c::Texture {
-	private:
-		Texture(const raylib_c::Texture &other) : raylib_c::Texture{other} {}
-
-	public:
+		
 		friend struct Image;
+		friend struct RenderTexture;
+
 		Texture() = default;			
 		Texture(const Texture &) = delete;
-		Texture(Texture &&other) = default;
+		//Texture(Texture &&) = default;
 
 		Texture(const std::string &fileName) : raylib_c::Texture{raylib_c::LoadTexture(fileName.c_str())} {}
-		Texture(const raylib_c::Image &image) : raylib_c::Texture{raylib_c::LoadTextureFromImage(image)} {}
-		~Texture() { Unload(); }
+		Texture(Image &image) : raylib_c::Texture{} {*this = image;}
+		
+		~Texture() { Unload(*this); }
 
+		inline void Update(const void *pixels) { raylib_c::UpdateTexture(*this,pixels); }
+		inline void Update(const Rectangle &rec, const void *pixels) { raylib_c::UpdateTextureRec(*this,rec,pixels); }
+		inline void Draw(const Vector2f &position, const Color &tint=Color::White)  { Draw(*this,position,tint); }
+		inline void Draw(const Vector2f &position, const float &rotation = 0.f, const float &scale = 1.f, const Color &tint=Color::White)  
+						{ Draw(*this,position,rotation,scale,tint); }
+		inline void Draw(const Rectangle &source, const Rectangle &destination, const Vector2f &origin = {0.f,0.f}, const float &rotation = 0.f, const Color &tint=Color::White) 
+						{ Draw(*this,source,destination,origin,rotation,tint); }
+		inline void Draw(const Rectangle &source, const Vector2f &position, const Color &tint=Color::White)
+						{ Draw(*this,source,position,tint); }
+	
+		Texture &operator=(Image &image) { 
+			
+			auto temp = raylib_c::LoadTextureFromImage(image); 
+			if(temp.id && id) {
+				Unload(*this);
+				this->id = temp.id;
+				this->height = temp.height;
+				this->width = temp.width;
+				this->mipmaps = temp.mipmaps;
+				this->format = temp.format;				
+			}
+			return *this; 
+		}
+
+		inline Texture& SetFilter(const uint32_t &filter) { raylib_c::SetTextureFilter(*this,filter); return *this; }
+		inline Texture& SetWrap(const uint32_t &wrap) { raylib_c::SetTextureWrap(*this,wrap);  return *this; }
+
+		// Wrappers
+		static inline void Draw(Texture &texture, const Vector2f &position, const Color &tint=Color::White) 
+			{ raylib_c::DrawTexture(texture, position.x, position.y,tint); }
+		static inline void Draw(Texture &texture, const Rectangle &source, const Rectangle &destination, const Vector2f &origin = {0.f,0.f}, const float &rotation = 0.f, const Color &tint=Color::White) 
+			{ raylib_c::DrawTexturePro(texture,source,destination,origin,rotation,tint); }
+		static inline void Draw(Texture &texture, const Vector2f &position, const float &rotation = 0.f, const float &scale = 1.f, const Color &tint=Color::White) 
+			{ raylib_c::DrawTextureEx(texture, position, rotation, scale, tint); }
+		static inline void Draw(Texture &texture, const Rectangle &source, const Vector2f &position, const Color &tint) 
+			{ raylib_c::DrawTextureRec(texture,source,position,tint); }
+
+		static inline void Unload(Texture &texture) { raylib_c::UnloadTexture(texture); }
 		[[nodiscard]] static inline Texture LoadFromFile(const std::string &fileName) { return raylib_c::LoadTexture(fileName.c_str()); }
 		[[nodiscard]] static inline Texture LoadFromImage(const Image &image) { return raylib_c::LoadTextureFromImage(image); }
 
-		void Unload() { raylib_c::UnloadTexture(*this); }
+		// Texture parameters: filter mode
+		// NOTE 1: Filtering considers mipmaps if available in the texture
+		// NOTE 2: Filter is accordingly set for minification and magnification
+		enum Filter {
+			Point 			= raylib_c::TEXTURE_FILTER_POINT,			// No filter, just pixel approximation
+			Bilinear 		= raylib_c::TEXTURE_FILTER_BILINEAR,		// Linear filtering
+			Trilinear 		= raylib_c::TEXTURE_FILTER_TRILINEAR,		// Trilinear filtering (linear with mipmaps)
+			Anisotropic4X 	= raylib_c::TEXTURE_FILTER_ANISOTROPIC_4X,	// Anisotropic filtering 4x
+			Anisotropic8X 	= raylib_c::TEXTURE_FILTER_ANISOTROPIC_8X,	// Anisotropic filtering 8x
+			Anisotropic16X 	= raylib_c::TEXTURE_FILTER_ANISOTROPIC_16X,	// Anisotropic filtering 16x
+		};
 
-		void Update(const void *pixels) { raylib_c::UpdateTexture(*this,pixels); }
-		void Update(const Rectangle &rec, const void *pixels) { raylib_c::UpdateTextureRec(*this,rec,pixels); }
+		// Texture parameters: wrap mode
+		enum Wrap{
+			Repeat 			= raylib_c::TEXTURE_WRAP_REPEAT,		// Repeats texture in tiled mode
+			Clamp 			= raylib_c::TEXTURE_WRAP_CLAMP,			// Clamps texture to edge pixel in tiled mode
+			MirrorRepeat 	= raylib_c::TEXTURE_WRAP_MIRROR_REPEAT,	// Mirrors and repeats the texture in tiled mode
+			MirrorClamp 	= raylib_c::TEXTURE_WRAP_MIRROR_CLAMP	// Mirrors and clamps to border the texture in tiled mode
+		};
+
+	protected:
+		Texture(const raylib_c::Texture &other) : raylib_c::Texture{other} {}
 	};
 
 	Image TextureToImage(const Texture &Texture) { return Image::LoadFromTexture(Texture); }
 	Texture ImageToTexture(const Image &image) { return Texture::LoadFromImage(image); }
 
-	struct RenderTexture : public raylib_c::RenderTexture {		
-	private:
-		RenderTexture(const raylib_c::RenderTexture &other) : raylib_c::RenderTexture{other.id, other.texture, other.depth} {}
+	struct RenderTexture : public raylib_c::RenderTexture {
+		
+		friend struct Texture;
+		friend struct Image;
+		friend struct ModeTextureScope;
 
-	public:
-		RenderTexture() = default;
 		RenderTexture(const RenderTexture &) = delete;
 		RenderTexture(RenderTexture &&) = default;
-		~RenderTexture() { raylib_c::UnloadRenderTexture(*this); }
+		~RenderTexture() { Unload(*this); }
 
 		RenderTexture(const Vector2i &size) : raylib_c::RenderTexture(raylib_c::LoadRenderTexture(size.x, size.y)) {}
+		RenderTexture(const uint32_t &width, const uint32_t &height) : raylib_c::RenderTexture(raylib_c::LoadRenderTexture(width, height)) {}
+
+		inline void Draw(const Vector2f &position, const Color &tint=Color::White)  
+			{ raylib_c::DrawTexture(this->texture,position.x,position.y,tint); }
+		inline void Draw(const Vector2f &position, const float &rotation = 0.f, const float &scale = 1.f, const Color &tint=Color::White)  
+			{ raylib_c::DrawTextureEx(this->texture,position,rotation,scale,tint); }
+		inline void Draw(const Rectangle &source, const Rectangle &destination, const Vector2f &origin = {0.f,0.f}, const float &rotation = 0.f, const Color &tint=Color::White) 
+			{ raylib_c::DrawTexturePro(this->texture,source,destination,origin,rotation,tint); }
+		inline void Draw(const Rectangle &source, const Vector2f &position, const Color &tint=Color::White)
+			{ raylib_c::DrawTextureRec(this->texture,source,position,tint); }
 
 		// Static wrappers for raylib
-		[[nodiscard]] static inline RenderTexture LoadRenderTexture(const Vector2i &size) { return raylib_c::LoadRenderTexture(size.x, size.y); }
+		static inline void Unload(const RenderTexture &texture) { raylib_c::UnloadRenderTexture(texture); }
+		[[nodiscard]] static inline RenderTexture LoadRenderTexture(const uint32_t &width, const uint32_t &height) { return raylib_c::LoadRenderTexture(width, height); }
+
+	protected:
+		RenderTexture(const raylib_c::RenderTexture &other) : raylib_c::RenderTexture{other.id, other.texture, other.depth} {}
+		RenderTexture() : raylib_c::RenderTexture(){}
+
 	};
 
+
+	// GlyphInfo, font characters glyphs info
+	struct GlyphInfo : public raylib_c::GlyphInfo {
+		Image image;            // Character image data
+		
+		friend struct Font;
+		friend struct Image;
+
+		protected:
+		GlyphInfo(const raylib_c::GlyphInfo &other) : raylib_c::GlyphInfo(other){}
+	};
+
+	// Font, font texture and GlyphInfo array data
+	struct Font : public raylib_c::Font {
+
+		Texture texture;        // Texture atlas containing the glyphs
+		Rectangle *recs;        // Rectangles in texture for the glyphs
+		GlyphInfo *glyphs;      // Glyphs info data
+
+		Font(const Font &) = delete;
+		Font(Font &&) = default;
+		~Font(){ UnloadFont(*this); }
+
+		Font(const std::string &fileName) : raylib_c::Font{ LoadFont(fileName) } {} // Load font from file into GPU memory (VRAM)
+		Font(const std::string &fileName, int fontSize, int *fontChars, int glyphCount) : raylib_c::Font{ LoadFont(fileName,fontSize,fontChars,glyphCount)} {}				// Load font from file with extended parameters
+		Font(const Image &image, const Color &key, int firstChar)  : raylib_c::Font{ LoadFont(image,key,firstChar)} {}	// Load font from Image (XNA style)
+		Font(const char *fileType, const unsigned char *fileData, int dataSize, int fontSize, int *fontChars, int glyphCount)  : raylib_c::Font{ LoadFont(fileType,fileData,dataSize,fontSize,fontChars,glyphCount)} {} // Load font from memory buffer, fileType refers to extension: i.e. '.ttf'
+
+		// Wrappers
+		static inline void Unload(Font &font) { raylib_c::UnloadFont(font); }	// Unload Font from GPU memory (VRAM)
+		[[nodiscard]] static inline const Font& GetDefault() { return sDefault; }				// Get the default Font
+		[[nodiscard]] static inline Font LoadFont(const std::string &fileName) { return raylib_c::LoadFont(fileName.c_str());} // Load font from file into GPU memory (VRAM)
+		[[nodiscard]] static inline Font LoadFont(const std::string &fileName, int fontSize, int *fontChars, int glyphCount) { return raylib_c::LoadFontEx(fileName.c_str(),fontSize,fontChars,glyphCount); }	// Load font from file with extended parameters
+		[[nodiscard]] static inline Font LoadFont(const Image &image, const Color &key, int firstChar)  { return raylib_c::LoadFontFromImage(image,key,firstChar);}	// Load font from Image (XNA style)
+		[[nodiscard]] static inline Font LoadFont(const char *fileType, const unsigned char *fileData, int dataSize, int fontSize, int *fontChars, int glyphCount)  { return raylib_c::LoadFontFromMemory(fileType,fileData,dataSize,fontSize,fontChars,glyphCount);}	// Load font from memory buffer, fileType refers to extension: i.e. '.ttf'
+
+		protected:
+
+		Font(const raylib_c::Font &other) : raylib_c::Font(other) {}
+		const static Font sDefault;
+	};
+
+	const Font Font::sDefault = std::move(raylib_c::GetFontDefault());
+
+	struct Text : private std::string {
+		
+		Text() : std::string() {}
+		Text(const std::stringstream &text) : std::string{text.str()} {}
+		Text(const std::string &str) : std::string(str) {}
+		Text(const Text &text) : std::string(text) {}
+		Text(const unsigned int &value) : std::string(std::to_string(value)) {}
+		Text(const int &value) : std::string(std::to_string(value)) {}
+		Text(const float &value) : std::string(std::to_string(value)) {}
+		Text(const double &value) : std::string(std::to_string(value)) {}
+
+		void Draw(const Vector2i &position, uint32_t fontSize, Color color) { raylib_c::DrawText(this->c_str(), position.x, position.y, fontSize, color);}
+		void Draw(const raylib_c::Font &font, Vector2f position, float fontSize, float spacing, const Color &tint) { raylib_c::DrawTextEx(font,this->c_str(),position,fontSize,spacing,tint); } // Draw text using font and additional parameters
+		void Draw(const raylib_c::Font &font, Vector2f position, Vector2f origin, float rotation, float fontSize, float spacing, const Color &tint) { DrawTextPro(font,this->c_str(),position,origin,rotation,fontSize,spacing,tint); } // Draw text using Font and pro parameters (rotation)
+
+		Text* Clear() { this->clear(); return this; }
+		inline uint32_t Length() { return this->length(); }
+		operator const char*() const { return this->c_str(); }
+
+		inline Text &operator<<(std::string &str) { *this += str; return *this; }
+		inline Text &operator<<(std::stringstream &stream) { *this += stream.str(); return *this; }
+		inline Text &operator<<(const char *text) { *this += text; return *this; }
+		inline Text &operator<<(const unsigned int &value) { *this += std::to_string(value); return *this; }
+		inline Text &operator<<(const int &value) { *this += std::to_string(value); return *this; }
+		inline Text &operator<<(const float &value) { *this += std::to_string(value); return *this; }
+		inline Text &operator<<(const double &value) { *this += std::to_string(value); return *this; }
+
+		// Wrappers
+		static inline void FPS(int posX, int posY) { raylib_c::DrawFPS(posX, posY); }       // Draw current FPS
+		static inline void FPS(const Vector2i &position) { raylib_c::DrawFPS(position.x, position.y); }
+		static inline void Draw(const Text &text, const Vector2i &position, uint32_t fontSize, Color color) { raylib_c::DrawText(text.c_str(), position.x, position.y, fontSize, color);}
+		static inline void DrawCodepoint(const raylib_c::Font &font, int codepoint, Vector2f position, float fontSize, const Color &tint) { raylib_c::DrawTextCodepoint(font,codepoint,position,fontSize,tint); } // Draw one character (codepoint)
+
+	};
+
+	
 	// Camera, defines position/orientation in 3d space
 	struct Camera3D : public raylib_c::Camera3D {
+
+		friend struct Mode3DScope;
+		
+		inline Vector3f& Position() {return (Vector3f&)position; }
+		inline Vector3f& Target() {return (Vector3f&)target; }
+		inline Vector3f& Up() {return (Vector3f&)up; }
+
+		//Vector3f 
 
 		// Camera projection
 		enum Type{ 
@@ -282,22 +500,40 @@ namespace raylib {
 			ThirdPerson		// Third person camera
 		};
 
-
 		Camera3D() : raylib_c::Camera3D{ Vector3f{}, Vector3f{}, {0.0f,1.0f,0.0f}, 45.f, Type::Perspective} {}
 		Camera3D(const Vector3f &position, const Vector3f &target, const Vector3f &up={0.0f,1.0f,0.0f}, const float &fovy=45.f, const Type &type=Type::Perspective) : raylib_c::Camera3D{position,target,up,fovy,type} {}
 
+		inline Camera3D& operator+=(const Vector3f &displace) { Position()+=displace; Target()+=displace; return *this;}
+		inline Camera3D& operator-=(const Vector3f &displace) { Position()-=displace; Target()-=displace; return *this;}
+/*
+		inline Camera3D& operator*=(const float &rotate) { 
+			auto dir = Position()-Target();
+			Matrix4f rot(1.0f);
+			raylib_c::rlPushMatrix();
+				raylib_c::rlRotatef(rotate,dir.x,dir.y,dir.z);
+				raylib_c::rlMultMatrixf(&rot[0]);
+			raylib_c::rlPopMatrix();
+			
+			return *this;
+		}
+		inline Camera3D& operator/=(const float &rotate) { 
+			auto dir = Position()-Target();
+			raylib_c::rlRotatef(-rotate,dir.x,dir.y,dir.z);
+			Position() += dir;
+			return *this;
+		}
+*/
 		void SetMode(const Camera3D::Mode &mode) { raylib_c::SetCameraMode( *this, mode); }
 		void Update() { raylib_c::UpdateCamera(this); }
 	
 	};
-
-	typedef Camera3D Camera;	// Camera type fallback, defaults to Camera3D
 
 
 	struct Camera2D : public raylib_c::Camera2D {
 		Vector2f offset;	// Camera offset (displacement from target)
 		Vector2f target;	// Camera target (rotation and zoom origin)
 
+		friend struct Mode3DScope;
 		Camera2D() : raylib_c::Camera2D{{0.f,0.f},{0.f,0.f},0.f,1.f} {}
 	};
 
@@ -340,13 +576,16 @@ namespace raylib {
 		inline Vector2f GetPosition() { return raylib_c::GetWindowPosition(); }	// Get window position XY on monitor
 		inline int GetWidth() { return raylib_c::GetScreenWidth(); }
 		inline int GetHeight() { return raylib_c::GetScreenHeight(); }
-//		inline Vector2f GetScaleDPI() { return raylib_c::GetWindowScaleDPI(); }	// Get window scale DPI factor
+		inline Vector2f GetScaleDPI() { return raylib_c::GetWindowScaleDPI(); }	// Get window scale DPI factor
 
 	};
-	typedef UniqueWindow Window;
 
 	// Drawing-related functions
 	namespace render{
+
+		[[nodiscard]] static float GetFrameTime() { return raylib_c::GetFrameTime(); }
+		[[nodiscard]] static uint32_t GetScreenWidth() { return raylib_c::GetScreenWidth(); }
+		[[nodiscard]] static uint32_t GetScreenHeight() { return raylib_c::GetScreenHeight(); }
 
 		static void SetTargetFPS(uint32_t fps) { raylib_c::SetTargetFPS(fps); }
 
@@ -394,6 +633,8 @@ namespace raylib {
 	static void EndVrStereoMode() { ::EndVrStereoMode(); } 									// End stereo rendering (requires VR simulator)
 */
 
+
+
 	namespace draw {
 
 		// Shapes
@@ -412,11 +653,6 @@ namespace raylib {
 		static void Grid(uint32_t slices, float spacing) { raylib_c::DrawGrid(slices,spacing); }
 	}
 
-	namespace text{
-
-		void FPS(const Vector2i &position) { raylib_c::DrawFPS(position.x, position.y); }
-		void Draw(const std::string &text, const Vector2i &position, uint32_t fontSize, Color color) { raylib_c::DrawText(text.c_str(), position.x, position.y, fontSize, color);}
-	}
 
 	namespace Input{
 

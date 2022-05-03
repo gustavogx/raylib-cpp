@@ -48,7 +48,7 @@ int main(void)
 	Camera2D worldSpaceCamera;// Game world camera
 	Camera2D screenSpaceCamera;// Smoothing camera
 	
-	RenderTexture target{ Vector2i{virtualScreenWidth, virtualScreenHeight} }; // This is where we'll draw all our objects.
+	RenderTexture target { virtualScreenWidth, virtualScreenHeight }; // This is where we'll draw all our objects.
 
 	Rectangle rec01 { 150.0f, 100.0f, 100.0f, 100.0f };
 	Rectangle rec02 { 250.0f, 120.0f, 70.0f, 140.0f };
@@ -67,12 +67,16 @@ int main(void)
 	render::SetTargetFPS(60);
 	//--------------------------------------------------------------------------------------
 
+	Text text1, text2;
+	text1 << "Screen resolution: " << screenWidth <<"x"<<screenHeight;
+	text2 << "World resolution: " << virtualScreenWidth <<"x"<<virtualScreenHeight;
+
 	// Main game loop
 	while (!window.ShouldClose())    // Detect window close button or ESC key
 	{
 		// Update
 		//----------------------------------------------------------------------------------
-		rotation += 60.0f*raylib_c::GetFrameTime();   // Rotate the rectangles, 60 degrees per second
+		rotation += 60.0f*render::GetFrameTime();   // Rotate the rectangles, 60 degrees per second
 
 		// Make the camera move to demonstrate the effect
 		// Set the camera's target to the values computed above
@@ -101,12 +105,13 @@ int main(void)
 			render::ClearBackground(Color::Red);
 
 			Mode2D(screenSpaceCamera){
-				raylib_c::DrawTexturePro(target.texture, sourceRec, destRec, origin, 0.0f, Color::White);
+				target.Draw(sourceRec,destRec,origin);
 			}
 
-			text::Draw(raylib_c::TextFormat("Screen resolution: %ix%i", screenWidth, screenHeight), {10, 10}, 20, Color::DarkBlue);
-			text::Draw(raylib_c::TextFormat("World resolution: %ix%i", virtualScreenWidth, virtualScreenHeight), {10, 40}, 20, Color::DarkGreen);
-			text::FPS( {raylib_c::GetScreenWidth() - 95, 10} );
+			text1.Draw({10,10},20, Color::DarkBlue);
+			text2.Draw({10,40},20, Color::DarkGreen);
+			Text::FPS( window.GetWidth() - 95, 10 );
+
 		}
 		//----------------------------------------------------------------------------------
 	} 
