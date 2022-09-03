@@ -325,6 +325,9 @@ ifeq ($(PLATFORM),PLATFORM_DESKTOP)
         ifeq ($(RAYLIB_LIBTYPE),SHARED)
             LDLIBS += -lc
         endif
+        
+        # TODO: On ARM 32bit arch, miniaudio requires atomics library
+        LDLIBS += -latomic
     endif
     ifeq ($(PLATFORM_OS),OSX)
         # Libraries for OSX 10.9 desktop compiling
@@ -463,6 +466,7 @@ MODELS = \
     models/models_loading \
     models/models_loading_vox \
     models/models_loading_gltf \
+    models/models_loading_m3d \
     models/models_orthographic_projection \
     models/models_rlgl_solar_system \
     models/models_skybox \
