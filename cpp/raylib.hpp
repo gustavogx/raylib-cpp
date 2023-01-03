@@ -57,6 +57,7 @@ namespace raylib {
 
 		Color(const raylib_c::Color &color) : raylib_c::Color(color) {} 
 		Color(const uint8_t &red, const uint8_t &green, const uint8_t &blue, const uint8_t &alpha=255) : raylib_c::Color{red,green,blue,alpha} {}
+		
 		Color Fade(const float &alpha) const { return raylib_c::Fade(*this,alpha); }
 
 		// Custom raylib color palette for amazing visuals
@@ -619,7 +620,11 @@ namespace raylib {
 	#define Drawing for(raylib::render::DrawingScope scope; scope.run; scope.run=false)
 	#define Mode2D(camera2D) for(raylib::render::Mode2DScope scope(camera2D); scope.run; scope.run=false)
 	#define Mode3D(camera3D) for(raylib::render::Mode3DScope scope(camera3D); scope.run; scope.run=false)
-	#define ModeTexture(target) for(raylib::render::ModeTextureScope scope(target); scope.run; scope.run=false)
+	#define TextureMode(target) for(raylib::render::ModeTextureScope scope(target); scope.run; scope.run=false)
+
+	#define ScreenDraw for(raylib::render::DrawingScope scope; scope.run; scope.run=false)
+	#define TextureDraw(target) for(raylib::render::ModeTextureScope scope(target); scope.run; scope.run=false)
+
 /*
 	static void BeginTextureMode(RenderTexture2D target) { ::BeginTextureMode(target); }    // Begin drawing to render texture
 	static void EndTextureMode() { :: EndTextureMode(); }                                   // Ends drawing to render texture
