@@ -89,7 +89,7 @@
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2013-2022 Ramon Santamaria (@raysan5)
+*   Copyright (c) 2013-2023 Ramon Santamaria (@raysan5)
 *
 *   This software is provided "as-is", without any express or implied warranty. In no event
 *   will the authors be held liable for any damages arising from the use of this software.
@@ -151,7 +151,7 @@
     #include "external/sdefl.h"     // Deflate (RFC 1951) compressor
 #endif
 
-#if (defined(__linux__) || defined(PLATFORM_WEB)) && _POSIX_C_SOURCE < 199309L
+#if (defined(__linux__) || defined(PLATFORM_WEB)) && (_POSIX_C_SOURCE < 199309L)
     #undef _POSIX_C_SOURCE
     #define _POSIX_C_SOURCE 199309L // Required for: CLOCK_MONOTONIC if compiled with c99 without gnu ext.
 #endif
@@ -765,7 +765,7 @@ void InitWindow(int width, int height, const char *title)
     CORE.Input.Keyboard.exitKey = KEY_ESCAPE;
     CORE.Input.Mouse.scale = (Vector2){ 1.0f, 1.0f };
     CORE.Input.Mouse.cursor = MOUSE_CURSOR_ARROW;
-    CORE.Input.Gamepad.lastButtonPressed = -1;
+    CORE.Input.Gamepad.lastButtonPressed = 0;       // GAMEPAD_BUTTON_UNKNOWN
 #if defined(SUPPORT_EVENTS_WAITING)
     CORE.Window.eventWaiting = true;
 #endif
@@ -2525,25 +2525,34 @@ void SetShaderValue(Shader shader, int locIndex, const void *value, int uniformT
 // Set shader uniform value vector
 void SetShaderValueV(Shader shader, int locIndex, const void *value, int uniformType, int count)
 {
-    rlEnableShader(shader.id);
-    rlSetUniform(locIndex, value, uniformType, count);
-    //rlDisableShader();      // Avoid reseting current shader program, in case other uniforms are set
+    if (locIndex > -1)
+    {
+        rlEnableShader(shader.id);
+        rlSetUniform(locIndex, value, uniformType, count);
+        //rlDisableShader();      // Avoid reseting current shader program, in case other uniforms are set
+    }
 }
 
 // Set shader uniform value (matrix 4x4)
 void SetShaderValueMatrix(Shader shader, int locIndex, Matrix mat)
 {
-    rlEnableShader(shader.id);
-    rlSetUniformMatrix(locIndex, mat);
-    //rlDisableShader();
+    if (locIndex > -1)
+    {
+        rlEnableShader(shader.id);
+        rlSetUniformMatrix(locIndex, mat);
+        //rlDisableShader();
+    }
 }
 
 // Set shader uniform value for texture
 void SetShaderValueTexture(Shader shader, int locIndex, Texture2D texture)
 {
-    rlEnableShader(shader.id);
-    rlSetUniformSampler(locIndex, texture.id);
-    //rlDisableShader();
+    if (locIndex > -1)
+    {
+        rlEnableShader(shader.id);
+        rlSetUniformSampler(locIndex, texture.id);
+        //rlDisableShader();
+    }
 }
 
 // Get a ray trace from mouse position
@@ -2813,6 +2822,9 @@ void TakeScreenshot(const char *fileName)
 }
 
 // Get a random value between min and max (both included)
+// WARNING: Ranges higher than RAND_MAX will return invalid results
+// More specifically, if (max - min) > INT_MAX there will be an overflow, 
+// and otherwise if (max - min) > RAND_MAX the random value will incorrectly never exceed a certain threshold
 int GetRandomValue(int min, int max)
 {
     if (min > max)
@@ -2822,11 +2834,9 @@ int GetRandomValue(int min, int max)
         min = tmp;
     }
     
-    // WARNING: Ranges higher than RAND_MAX will return invalid results. More specifically, if (max - min) > INT_MAX there will
-    // be an overflow, and otherwise if (max - min) > RAND_MAX the random value will incorrectly never exceed a certain threshold.
     if ((unsigned int)(max - min) > (unsigned int)RAND_MAX)
     {
-        TRACELOG(LOG_WARNING, "Invalid GetRandomValue arguments. Range should not be higher than %i.", RAND_MAX);
+        TRACELOG(LOG_WARNING, "Invalid GetRandomValue() arguments, range should not be higher than %i", RAND_MAX);
     }
 
     return (rand()%(abs(max - min) + 1) + min);
@@ -4870,7 +4880,7 @@ void PollInputEvents(void)
 
 #if !(defined(PLATFORM_RPI) || defined(PLATFORM_DRM))
     // Reset last gamepad button/axis registered state
-    CORE.Input.Gamepad.lastButtonPressed = -1;
+    CORE.Input.Gamepad.lastButtonPressed = 0;       // GAMEPAD_BUTTON_UNKNOWN
     CORE.Input.Gamepad.axisCount = 0;
 #endif
 
@@ -5713,14 +5723,15 @@ static int32_t AndroidInputCallback(struct android_app *app, AInputEvent *event)
             CORE.Input.Gamepad.ready[0] = true;
 
             GamepadButton button = AndroidTranslateGamepadButton(keycode);
-            if (button == GAMEPAD_BUTTON_UNKNOWN)
-                return 1;
+            
+            if (button == GAMEPAD_BUTTON_UNKNOWN) return 1;
 
             if (AKeyEvent_getAction(event) == AKEY_EVENT_ACTION_DOWN)
             {
                 CORE.Input.Gamepad.currentButtonState[0][button] = 1;
             }
             else CORE.Input.Gamepad.currentButtonState[0][button] = 0;  // Key up
+            
             return 1; // Handled gamepad button
         }
 
@@ -6684,7 +6695,7 @@ static void *GamepadThread(void *arg)
                         CORE.Input.Gamepad.currentButtonState[i][gamepadEvent.number] = (int)gamepadEvent.value;
 
                         if ((int)gamepadEvent.value == 1) CORE.Input.Gamepad.lastButtonPressed = gamepadEvent.number;
-                        else CORE.Input.Gamepad.lastButtonPressed = -1;
+                        else CORE.Input.Gamepad.lastButtonPressed = 0;       // GAMEPAD_BUTTON_UNKNOWN
                     }
                 }
                 else if (gamepadEvent.type == JS_EVENT_AXIS)

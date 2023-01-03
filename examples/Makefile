@@ -2,7 +2,7 @@
 #
 #   raylib makefile for Desktop platforms, Raspberry Pi, Android and HTML5
 #
-#   Copyright (c) 2013-2022 Ramon Santamaria (@raysan5)
+#   Copyright (c) 2013-2023 Ramon Santamaria (@raysan5)
 #
 #   This software is provided "as-is", without any express or implied warranty. In no event
 #   will the authors be held liable for any damages arising from the use of this software.
@@ -520,7 +520,8 @@ SHADERS = \
     shaders/shaders_spotlight \
     shaders/shaders_hot_reloading \
     shaders/shaders_mesh_instancing \
-    shaders/shaders_multi_sample2d
+    shaders/shaders_multi_sample2d \
+    shaders/shaders_write_depth
 
 AUDIO = \
     audio/audio_module_playing \
