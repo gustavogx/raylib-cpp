@@ -444,6 +444,7 @@ namespace raylib {
 		Text() : std::string() {}
 		Text(const std::stringstream &text) : std::string{text.str()} {}
 		Text(const std::string &str) : std::string(str) {}
+		Text(const char *str) : std::string(str) {}
 		Text(const Text &text) : std::string(text) {}
 		Text(const unsigned int &value) : std::string(std::to_string(value)) {}
 		Text(const int &value) : std::string(std::to_string(value)) {}
@@ -579,6 +580,14 @@ namespace raylib {
 		inline int GetHeight() { return raylib_c::GetScreenHeight(); }
 		inline Vector2f GetScaleDPI() { return raylib_c::GetWindowScaleDPI(); }	// Get window scale DPI factor
 
+		[[nodiscard]] static float GetFrameTime() { return raylib_c::GetFrameTime(); }
+		[[nodiscard]] static uint32_t GetScreenWidth() { return raylib_c::GetScreenWidth(); }
+		[[nodiscard]] static uint32_t GetScreenHeight() { return raylib_c::GetScreenHeight(); }
+
+		static void SetTargetFPS(uint32_t fps) { raylib_c::SetTargetFPS(fps); }
+
+		static void ClearBackground(const Color &color) { raylib_c::ClearBackground(color); } // Set background color (framebuffer clear color)
+
 	};
 
 	// Drawing-related functions
@@ -621,9 +630,6 @@ namespace raylib {
 	#define Mode2D(camera2D) for(raylib::render::Mode2DScope scope(camera2D); scope.run; scope.run=false)
 	#define Mode3D(camera3D) for(raylib::render::Mode3DScope scope(camera3D); scope.run; scope.run=false)
 	#define TextureMode(target) for(raylib::render::ModeTextureScope scope(target); scope.run; scope.run=false)
-
-	#define ScreenDraw for(raylib::render::DrawingScope scope; scope.run; scope.run=false)
-	#define TextureDraw(target) for(raylib::render::ModeTextureScope scope(target); scope.run; scope.run=false)
 
 /*
 	static void BeginTextureMode(RenderTexture2D target) { ::BeginTextureMode(target); }    // Begin drawing to render texture

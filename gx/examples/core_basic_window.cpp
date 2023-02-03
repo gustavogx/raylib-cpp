@@ -1,8 +1,16 @@
 /*******************************************************************************************
 *
-*   raylib-cpp example - Basic window
+*   raylib-gx example - Basic window
+*
+*   raylib.hpp is an abstraction layer over raylib.h with (almost) zero overhead.
 *	
-*	Based on the example 'Basic window' by
+*	Just drop raylib.hpp into your project's folder.
+*   To learn how to use it, compare this example with the corresponding one it is based on.
+*
+*	Based on the example 'core_basic_window.c'
+*   You can find all basic examples on C:\raylib\raylib\examples folder or
+*   raylib official webpage: www.raylib.com
+*
 *   Copyright (c) 2013-2016 Ramon Santamaria (@raysan5)
 *
 * 	On linux, compile with
@@ -19,7 +27,7 @@ int main(void)
 	// Initialization
 	//--------------------------------------------------------------------------------------
 	Window window {800,450,"raylib-cpp [core] example - basic window"};
-	render::SetTargetFPS(60);	// Set our game to run at 60 frames-per-second
+	Window::SetTargetFPS(60);	// Set our game to run at 60 frames-per-second
 	//--------------------------------------------------------------------------------------
 
 	// Main game loop
@@ -32,11 +40,10 @@ int main(void)
 
 		// Draw
 		//----------------------------------------------------------------------------------
+		Drawing{	// works like a named scope.
 
-		Drawing(){
-
-			render::ClearBackground(Color::RayWhite);
-			text::Draw("Congrats! You created your first window!", {190, 200}, 20, Color::LightGray);
+			Window::ClearBackground(Color::RayWhite);
+			Text::Draw("Congrats! You created your first window!", {190, 200}, 20, Color::LightGray);
 			
 		}
 		//----------------------------------------------------------------------------------
