@@ -306,24 +306,33 @@ RMAPI float Vector2DistanceSqr(Vector2 v1, Vector2 v2)
     return result;
 }
 
-// Calculate angle from two vectors
+// Calculate angle between two vectors
+// NOTE: Angle is calculated from origin point (0, 0)
+RMAPI float Vector2Angle(Vector2 v1, Vector2 v2)
+{
+    float result = atan2f(v2.y - v1.y, v2.x - v1.x);
+  
+    return result;
+}
+
+// Calculate angle defined by a two vectors line
 // NOTE: Parameters need to be normalized
 // Current implementation should be aligned with glm::angle
-RMAPI float Vector2Angle(Vector2 v1, Vector2 v2)
+RMAPI float Vector2LineAngle(Vector2 start, Vector2 end)
 {
     float result = 0.0f;
     
-    float dot = v1.x*v2.x + v1.y*v2.y;      // Dot product
+    float dot = start.x*end.x + start.y*end.y;      // Dot product
 
-    float dotClamp = (dot < -1.0f)? -1.0f : dot;  // Clamp
+    float dotClamp = (dot < -1.0f)? -1.0f : dot;    // Clamp
     if (dotClamp > 1.0f) dotClamp = 1.0f;
 
     result = acosf(dotClamp);
     
     // Alternative implementation, more costly
-    //float v1Length = sqrtf((v1.x*v1.x) + (v1.y*v1.y));
-    //float v2Length = sqrtf((v2.x*v2.x) + (v2.y*v2.y));
-    //float result = -acosf((v1.x*v2.x + v1.y*v2.y)/(v1Length*v2Length));
+    //float v1Length = sqrtf((start.x*start.x) + (start.y*start.y));
+    //float v2Length = sqrtf((end.x*end.x) + (end.y*end.y));
+    //float result = -acosf((start.x*end.x + start.y*end.y)/(v1Length*v2Length));
 
     return result;
 }
@@ -903,7 +912,7 @@ RMAPI Vector3 Vector3Unproject(Vector3 source, Matrix projection, Matrix view)
 {
     Vector3 result = { 0 };
 
-    // Calculate unproject matrix (multiply view patrix by projection matrix) and invert it
+    // Calculate unproject matrix (multiply view matrix by projection matrix) and invert it
     Matrix matViewProj = {      // MatrixMultiply(view, projection);
         view.m0*projection.m0 + view.m1*projection.m4 + view.m2*projection.m8 + view.m3*projection.m12,
         view.m0*projection.m1 + view.m1*projection.m5 + view.m2*projection.m9 + view.m3*projection.m13,

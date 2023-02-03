@@ -163,8 +163,17 @@
     #define QOI_MALLOC RL_MALLOC
     #define QOI_FREE RL_FREE
 
+#if defined(_MSC_VER ) // qoi has warnings on windows, so disable them just for this file
+#pragma warning( push )
+#pragma warning( disable : 4267)
+#endif
     #define QOI_IMPLEMENTATION
     #include "external/qoi.h"
+
+#if defined(_MSC_VER )
+#pragma warning( pop )
+#endif
+
 #endif
 
 #if defined(SUPPORT_IMAGE_EXPORT)
@@ -491,6 +500,12 @@ Image LoadImageFromScreen(void)
     image.data = rlReadScreenPixels(image.width, image.height);
 
     return image;
+}
+
+// Check if an image is ready
+bool IsImageReady(Image image)
+{
+    return image.data != NULL && image.width > 0 && image.height > 0 && image.format > 0;
 }
 
 // Unload image from CPU memory (RAM)
@@ -3315,6 +3330,12 @@ RenderTexture2D LoadRenderTexture(int width, int height)
     return target;
 }
 
+// Check if a texture is ready
+bool IsTextureReady(Texture2D texture)
+{
+    return texture.id > 0 && texture.width > 0 && texture.height > 0 && texture.format > 0;
+}
+
 // Unload texture from GPU memory (VRAM)
 void UnloadTexture(Texture2D texture)
 {
@@ -3324,6 +3345,12 @@ void UnloadTexture(Texture2D texture)
 
         TRACELOG(LOG_INFO, "TEXTURE: [ID %i] Unloaded texture data from VRAM (GPU)", texture.id);
     }
+}
+
+// Check if a render texture is ready
+bool IsRenderTextureReady(RenderTexture2D target)
+{
+    return target.id > 0 && IsTextureReady(target.depth) && IsTextureReady(target.texture);
 }
 
 // Unload render texture from GPU memory (VRAM)

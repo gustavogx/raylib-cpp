@@ -155,6 +155,9 @@
     #undef _POSIX_C_SOURCE
     #define _POSIX_C_SOURCE 199309L // Required for: CLOCK_MONOTONIC if compiled with c99 without gnu ext.
 #endif
+#if defined(__linux__) && !defined(_GNU_SOURCE)
+    #define _GNU_SOURCE
+#endif
 
 // Platform specific defines to handle GetApplicationDirectory()
 #if defined (PLATFORM_DESKTOP)
@@ -1945,7 +1948,21 @@ const char *GetClipboardText(void)
     return glfwGetClipboardString(CORE.Window.handle);
 #endif
 #if defined(PLATFORM_WEB)
-    return emscripten_run_script_string("navigator.clipboard.readText()");
+    // Accessing clipboard data from browser is tricky due to security reasons
+    // The method to use is navigator.clipboard.readText() but this is an asynchronous method
+    // that will return at some moment after the function is called with the required data
+    emscripten_run_script_string("navigator.clipboard.readText() \
+        .then(text => { document.getElementById('clipboard').innerText = text; console.log('Pasted content: ', text); }) \
+        .catch(err => { console.error('Failed to read clipboard contents: ', err); });"
+    );
+    
+    // The main issue is getting that data, one approach could be using ASYNCIFY and wait
+    // for the data but it requires adding Asyncify emscripten library on compilation
+    
+    // Another approach could be just copy the data in a HTML text field and try to retrieve it
+    // later on if available... and clean it for future accesses
+
+    return NULL;
 #endif
     return NULL;
 }
@@ -2490,6 +2507,12 @@ Shader LoadShaderFromMemory(const char *vsCode, const char *fsCode)
     }
 
     return shader;
+}
+
+// Check if a shader is ready
+bool IsShaderReady(Shader shader)
+{
+    return shader.locs != NULL;
 }
 
 // Unload shader from GPU memory (VRAM)
@@ -3293,7 +3316,7 @@ unsigned char *CompressData(const unsigned char *data, int dataSize, int *compDa
     compData = (unsigned char *)RL_CALLOC(bounds, 1);
     *compDataSize = sdeflate(&sdefl, compData, data, dataSize, COMPRESSION_QUALITY_DEFLATE);   // Compression level 8, same as stbwi
 
-    TraceLog(LOG_INFO, "SYSTEM: Compress data: Original size: %i -> Comp. size: %i", dataSize, *compDataSize);
+    TRACELOG(LOG_INFO, "SYSTEM: Compress data: Original size: %i -> Comp. size: %i", dataSize, *compDataSize);
 #endif
 
     return compData;
@@ -3318,7 +3341,7 @@ unsigned char *DecompressData(const unsigned char *compData, int compDataSize, i
 
     *dataSize = length;
 
-    TraceLog(LOG_INFO, "SYSTEM: Decompress data: Comp. size: %i -> Original size: %i", compDataSize, *dataSize);
+    TRACELOG(LOG_INFO, "SYSTEM: Decompress data: Comp. size: %i -> Original size: %i", compDataSize, *dataSize);
 #endif
 
     return data;
@@ -4026,7 +4049,7 @@ static bool InitGraphicsDevice(int width, int height)
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);   // Enable OpenGL Debug Context
 #endif
     }
-    else if (rlGetVersion() == RL_OPENGL_ES_20)                    // Request OpenGL ES 2.0 context
+    else if (rlGetVersion() == RL_OPENGL_ES_20)                 // Request OpenGL ES 2.0 context
     {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
@@ -4074,8 +4097,18 @@ static bool InitGraphicsDevice(int width, int height)
     if (CORE.Window.fullscreen)
     {
         // remember center for switchinging from fullscreen to window
-        CORE.Window.position.x = CORE.Window.display.width/2 - CORE.Window.screen.width/2;
-        CORE.Window.position.y = CORE.Window.display.height/2 - CORE.Window.screen.height/2;
+        if ((CORE.Window.screen.height == CORE.Window.display.height) && (CORE.Window.screen.width == CORE.Window.display.width))
+        {
+            // If screen width/height equal to the dislpay, we can't calclulate the window pos for toggling fullscreened/windowed.
+            // Toggling fullscreened/windowed with pos(0, 0) can cause problems in some platforms, such as X11.
+            CORE.Window.position.x = CORE.Window.display.width/4;
+            CORE.Window.position.y = CORE.Window.display.height/4;
+        }
+        else
+        {
+            CORE.Window.position.x = CORE.Window.display.width/2 - CORE.Window.screen.width/2;
+            CORE.Window.position.y = CORE.Window.display.height/2 - CORE.Window.screen.height/2;
+        }
 
         if (CORE.Window.position.x < 0) CORE.Window.position.x = 0;
         if (CORE.Window.position.y < 0) CORE.Window.position.y = 0;
@@ -6827,7 +6860,7 @@ static void LoadAutomationEvents(const char *fileName)
     if ((fileId[0] == 'r') && (fileId[1] == 'E') && (fileId[2] == 'P') && (fileId[1] == ' '))
     {
         fread(&eventCount, sizeof(int), 1, repFile);
-        TraceLog(LOG_WARNING, "Events loaded: %i\n", eventCount);
+        TRACELOG(LOG_WARNING, "Events loaded: %i\n", eventCount);
         fread(events, sizeof(AutomationEvent), eventCount, repFile);
     }
 
