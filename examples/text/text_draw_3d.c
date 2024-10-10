@@ -22,7 +22,7 @@
 *   Example licensed under an unmodified zlib/libpng license, which is an OSI-certified,
 *   BSD-like license that allows static linking with closed source software
 *
-*   Copyright (c) 2021-2023 Vlad Adrian (@demizdor)
+*   Copyright (c) 2021-2024 Vlad Adrian (@demizdor)
 *
 ********************************************************************************************/
 
@@ -96,14 +96,12 @@ int main(void)
     camera.target = (Vector3){ 0.0f, 0.0f, 0.0f };          // Camera looking at point
     camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };              // Camera up vector (rotation towards target)
     camera.fovy = 45.0f;                                    // Camera field-of-view Y
-    camera.projection = CAMERA_PERSPECTIVE;                 // Camera mode type
+    camera.projection = CAMERA_PERSPECTIVE;                 // Camera projection type
 
-    SetCameraMode(camera, CAMERA_ORBITAL);
+    int camera_mode = CAMERA_ORBITAL;
 
     Vector3 cubePosition = { 0.0f, 1.0f, 0.0f };
     Vector3 cubeSize = { 2.0f, 2.0f, 2.0f };
-
-    SetTargetFPS(60);                   // Set our game to run at 60 frames-per-second
 
     // Use the default font
     Font font = GetFontDefault();
@@ -134,6 +132,10 @@ int main(void)
 
     // Array filled with multiple random colors (when multicolor mode is set)
     Color multi[TEXT_MAX_LAYERS] = {0};
+
+    DisableCursor();                    // Limit cursor to relative movement inside the window
+
+    SetTargetFPS(60);                   // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
 
     // Main game loop
@@ -141,7 +143,7 @@ int main(void)
     {
         // Update
         //----------------------------------------------------------------------------------
-        UpdateCamera(&camera);
+        UpdateCamera(&camera, camera_mode);
         
         // Handle font files dropped
         if (IsFileDropped())
@@ -181,19 +183,19 @@ int main(void)
             if (spin)
             {
                 camera.position = (Vector3){ -10.0f, 15.0f, -10.0f };   // Camera position
-                SetCameraMode(camera, CAMERA_ORBITAL);
+                camera_mode = CAMERA_ORBITAL;
             }
             else
             {
                 camera.position = (Vector3){ 10.0f, 10.0f, -10.0f };   // Camera position
-                SetCameraMode(camera, CAMERA_FREE);
+                camera_mode = CAMERA_FREE;
             }
         }
 
         // Handle clicking the cube
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
         {
-            Ray ray = GetMouseRay(GetMousePosition(), camera);
+            Ray ray = GetScreenToWorldRay(GetMousePosition(), camera);
 
             // Check collision between ray and box
             RayCollision collision = GetRayCollisionBox(ray,
